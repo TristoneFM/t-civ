@@ -13,9 +13,22 @@ import {
   useTheme,
   CircularProgress,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Chip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+
+const DEFECT_OPTIONS = [
+  'Ampollas', 'Contaminacion', 'Cortas', 'Corte angular',
+  'Daño en mandril', 'Daño externo', 'Daño interno', 'ER Canal Interno',
+  'ER Cubierta suelta', 'ER Diametro abierto', 'ER Diametro cerrado', 'ER Doble golpe de',
+  'ER Encogimiento', 'ER espesor alto', 'ER espesor bajo', 'ER Grumos',
+  'ER Longitud corta', 'ER Longitud larga', 'ER Mal Tejido', 'ER Marca de rodillo',
+  'ER Porosidad de h', 'Falta de tapa', 'Largas', 'Marca de guante',
+  'Material acumulad', 'Porosidad', 'Problema de mues', 'Punta dañada',
+  'Rebaba', 'Ruptura en la curv', 'Ruptura en punta', 'SCRAP Auditorias',
+  'Suciedad de Mand', 'Tapa corta', 'Tapa costilluda'
+];
 
 export default function CapturePage() {
   const params = useParams();
@@ -28,6 +41,7 @@ export default function CapturePage() {
   const [error, setError] = useState(null);
   const [goodPieces, setGoodPieces] = useState('');
   const [badPieces, setBadPieces] = useState('');
+  const [selectedDefects, setSelectedDefects] = useState([]);
 
   useEffect(() => {
     const fetchStationAndMandrels = async () => {
@@ -98,6 +112,29 @@ export default function CapturePage() {
     }
   };
 
+  const handleDefectClick = (defect) => {
+    setSelectedDefects((prev) => {
+      const found = prev.find((d) => d.name === defect);
+      if (found) {
+        return prev.map((d) => d.name === defect ? { ...d, count: d.count + 1 } : d);
+      } else {
+        return [...prev, { name: defect, count: 1 }];
+      }
+    });
+    setBadPieces((prev) => (prev === '' ? '1' : String(Number(prev) + 1)));
+  };
+
+  const handleDefectDelete = (defectName) => {
+    setSelectedDefects((prev) => prev.filter((d) => d.name !== defectName));
+    const defect = selectedDefects.find((d) => d.name === defectName);
+    if (defect) {
+      setBadPieces((prev) => {
+        const newVal = Number(prev) - defect.count;
+        return newVal > 0 ? String(newVal) : '';
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
@@ -121,9 +158,8 @@ export default function CapturePage() {
         sx={{
           p: 3,
           width: '100%',
-          maxWidth: 800,
-          borderRadius: 2,
-          mx: 'auto'
+          maxWidth: 'none',
+          borderRadius: 2
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -216,6 +252,61 @@ export default function CapturePage() {
                   />
                 </Grid>
               </Grid>
+              {selectedDefects.length > 0 && (
+                <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {selectedDefects.map((defect, idx) => (
+                    <Chip
+                      key={idx}
+                      label={`${defect.name} x${defect.count}`}
+                      color="error"
+                      onDelete={() => handleDefectDelete(defect.name)}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Paper>
+
+            <Paper
+              elevation={1}
+              sx={{
+                mt: 3,
+                p: 3,
+                bgcolor: 'background.default',
+                borderRadius: 2
+              }}
+            >
+              <Typography variant="h6" component="div" gutterBottom>
+                Seleccionar Defectos
+              </Typography>
+              <Grid container spacing={1}>
+                {DEFECT_OPTIONS.map((defect, idx) => (
+                  <Grid item xs={6} sm={4} md={3} lg={2} key={idx}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      sx={{
+                        width: 200,
+                        height: 50,
+                        textTransform: 'none',
+                        fontSize: '0.95rem',
+                        mb: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        minWidth: 200,
+                        maxWidth: 200
+                      }}
+                      onClick={() => handleDefectClick(defect)}
+                    >
+                      {defect}
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
             </Paper>
           </>
         )}
@@ -233,12 +324,12 @@ export default function CapturePage() {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: '95%',
-              maxWidth: 800,
+              maxWidth: 1200,
               maxHeight: '90vh',
               bgcolor: 'background.paper',
               borderRadius: 2,
               boxShadow: 24,
-              p: 2,
+              p: 3,
               overflow: 'auto'
             }}
           >
@@ -246,7 +337,7 @@ export default function CapturePage() {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              mb: 2,
+              mb: 3,
               px: 1
             }}>
               <Typography variant="h6" component="h2">
@@ -257,52 +348,85 @@ export default function CapturePage() {
               </IconButton>
             </Box>
 
-            <Grid container spacing={1}>
+            <Grid container spacing={2}>
               {mandrels.map((mandrel, index) => (
-                <Grid item xs={4} sm={3} md={2} key={index}>
+                <Grid item xs={3} sm={2} md={2} lg={1.5} key={index}>
                   <Box
                     onClick={() => handleMandrelSelect(mandrel)}
                     sx={{
-                      height: 80,
-                      minWidth: 100,
-                      border: `2px solid ${getMandrelColor(mandrel.status)}`,
-                      borderRadius: 1,
+                      height: 70,
+                      minWidth: 150,
+                      border: `3px solid ${theme.palette.primary.main}`,
+                      borderRadius: 2,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
                       bgcolor: selectedMandrel?.mandrel === mandrel.mandrel 
-                        ? `${getMandrelColor(mandrel.status)}20`
+                        ? `${theme.palette.primary.main}20`
                         : 'transparent',
                       '&:hover': {
-                        bgcolor: `${getMandrelColor(mandrel.status)}10`,
+                        bgcolor: `${theme.palette.primary.main}10`,
+                        transform: 'scale(1.02)',
+                        transition: 'transform 0.2s ease-in-out'
                       },
-                      p: 1,
-                      position: 'relative'
+                      p: 2,
+                      position: 'relative',
+                      boxShadow: selectedMandrel?.mandrel === mandrel.mandrel 
+                        ? `0 0 10px ${theme.palette.primary.main}40`
+                        : 'none'
                     }}
                   >
-                    <Box sx={{ textAlign: 'center' }}>
+                    <Box sx={{ 
+                      textAlign: 'center',
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 0.5
+                    }}>
                       <Typography 
-                        variant="subtitle2" 
+                        variant="h6" 
                         component="div" 
                         noWrap
                         sx={{
-                          color: getMandrelColor(mandrel.status),
-                          fontWeight: selectedMandrel?.mandrel === mandrel.mandrel ? 600 : 400
+                          color: theme.palette.primary.main,
+                          fontWeight: selectedMandrel?.mandrel === mandrel.mandrel ? 700 : 500,
+                          fontSize: '1.25rem',
+                          width: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
                         }}
                       >
                         {mandrel.mandrel}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: getMandrelColor(mandrel.status),
+                          display: 'block',
+                          width: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {mandrel.status === 'available' ? 'Disponible' : 
+                         mandrel.status === 'in-use' ? 'En Uso' : 
+                         mandrel.status === 'maintenance' ? 'Mantenimiento' : 
+                         mandrel.status}
                       </Typography>
                       {selectedMandrel?.mandrel === mandrel.mandrel && (
                         <Box
                           sx={{
                             position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            width: 8,
-                            height: 8,
+                            top: 8,
+                            right: 8,
+                            width: 12,
+                            height: 12,
                             borderRadius: '50%',
-                            bgcolor: getMandrelColor(mandrel.status)
+                            bgcolor: getMandrelColor(mandrel.status),
+                            boxShadow: `0 0 8px ${getMandrelColor(mandrel.status)}`
                           }}
                         />
                       )}
