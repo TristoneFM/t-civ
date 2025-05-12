@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image';
+import PrintIcon from '@mui/icons-material/Print';
 
 const DEFECT_OPTIONS = [
   'Ampollas', 'Contaminacion', 'Cortas', 'Corte angular',
@@ -44,7 +45,9 @@ export default function CapturePage() {
   const [badPieces, setBadPieces] = useState('');
   const [selectedDefects, setSelectedDefects] = useState([]);
   const [showGoodKeypad, setShowGoodKeypad] = useState(false);
+  const [clientName, setClientName] = useState('');
   const goodInputRef = useRef();
+  const [isPrintSelected, setIsPrintSelected] = useState(false);
 
   useEffect(() => {
     const fetchStationAndMandrels = async () => {
@@ -83,9 +86,19 @@ export default function CapturePage() {
     setOpenModal(false);
   };
 
-  const handleMandrelSelect = (mandrel) => {
+  const handleMandrelSelect = async (mandrel) => {
     setSelectedMandrel(mandrel);
     handleCloseModal();
+    
+    try {
+      const response = await fetch(`/api/mandrels/client?sapNumber=P${mandrel.reference}`);
+      const data = await response.json();
+      setClientName(data.client);
+    } catch (error) {
+      console.error('Error fetching client details:', error);
+      setError('Error fetching client details');
+      setClientName('No disponible');
+    }
   };
 
   const getMandrelColor = (status) => {
@@ -150,6 +163,10 @@ export default function CapturePage() {
       setGoodPieces((prev) => (prev === '0' ? val : prev + val));
     }
     if (goodInputRef.current) goodInputRef.current.focus();
+  };
+
+  const handlePrintToggle = () => {
+    setIsPrintSelected(!isPrintSelected);
   };
 
   if (loading) {
@@ -341,19 +358,30 @@ export default function CapturePage() {
                   Cliente
                 </Typography>
                 <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 2 }}>
-                  {/* Replace with actual client value if available */}
-                  Ejemplo Cliente
+                  {clientName}
                 </Typography>
                 <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="text.secondary">
                   SAP Number
                 </Typography>
                 <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 2 }}>
-                  {/* Replace with actual SAP number if available */}
-                  12345678
+                  {selectedMandrel?.reference || 'No disponible'}
                 </Typography>
-                <Button variant="contained" color="success" size="large">
-                  Guardar
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Button variant="contained" color="success" size="large">
+                    Guardar
+                  </Button>
+                  <IconButton 
+                    onClick={handlePrintToggle}
+                    sx={{ 
+                      color: isPrintSelected ? 'success.main' : 'grey.500',
+                      '&:hover': {
+                        color: isPrintSelected ? 'success.dark' : 'grey.700'
+                      }
+                    }}
+                  >
+                    <PrintIcon fontSize="large" />
+                  </IconButton>
+                </Box>
               </Paper>
             </Grid>
             {/* Right: Image */}
