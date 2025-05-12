@@ -11,12 +11,22 @@ const dbConfig = {
 };
 
 // Helper function to execute queries with connection management
-export async function query(sql, params) {
+export async function query(sql, params, database = null) {
   let connection;
   try {
     // Create a new connection for each query
-    connection = await mysql.createConnection(dbConfig);
-    const [results] = await connection.execute(sql, params);
+    const config = database 
+      ? { ...dbConfig, database } 
+      : dbConfig;
+    connection = await mysql.createConnection(config);
+    
+    // Use query() for bulk inserts (when params is an array of arrays)
+    // and execute() for prepared statements
+    const isBulkInsert = Array.isArray(params) && Array.isArray(params[0]);
+    const [results] = isBulkInsert 
+      ? await connection.query(sql, params)
+      : await connection.execute(sql, params);
+    
     return results;
   } catch (error) {
     console.error('Database query error:', error);
@@ -33,11 +43,14 @@ export async function query(sql, params) {
 }
 
 // Helper function to execute a transaction
-export async function transaction(callback) {
+export async function transaction(callback, database = null) {
   let connection;
   try {
     // Create a new connection for the transaction
-    connection = await mysql.createConnection(dbConfig);
+    const config = database 
+      ? { ...dbConfig, database } 
+      : dbConfig;
+    connection = await mysql.createConnection(config);
     await connection.beginTransaction();
     const result = await callback(connection);
     await connection.commit();
@@ -63,10 +76,13 @@ export async function transaction(callback) {
 }
 
 // Helper function to check database connection
-export async function checkConnection() {
+export async function checkConnection(database = null) {
   let connection;
   try {
-    connection = await mysql.createConnection(dbConfig);
+    const config = database 
+      ? { ...dbConfig, database } 
+      : dbConfig;
+    connection = await mysql.createConnection(config);
     await connection.query('SELECT 1');
     return true;
   } catch (error) {

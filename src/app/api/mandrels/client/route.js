@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
+import { query } from '@/lib/mysql';
 
 export async function GET(request) {
   try {
@@ -13,21 +13,12 @@ export async function GET(request) {
       );
     }
 
-    // Create MySQL connection
-    const connection = await mysql.createConnection({
-      host: process.env.MYSQL_HOST2,
-      user: process.env.MYSQL_USER2,
-      password: process.env.MYSQL_PASSWORD2,
-      database: 'b10_bartender'
-    });
-
     // Query to get client details
-    const [rows] = await connection.execute(
+    const rows = await query(
       'SELECT client FROM vulc WHERE no_sap = ?',
-      [sapNumber]
+      [sapNumber],
+      'b10_bartender'
     );
-
-    await connection.end();
 
     if (rows.length === 0) {
       return NextResponse.json(
