@@ -14,6 +14,7 @@ import {
   CircularProgress,
   useTheme
 } from '@mui/material';
+import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 
@@ -70,13 +71,17 @@ export default function GraficasPage() {
       <Navbar />
       <Box sx={{ p: 3 }}>
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="600" fontSize="2.5rem" color="primary">
-            T-CIV Cumplimiento de Programación
-            <br/>
-            <br/>
-            TURNO {shift}
-            <br/>
-            <br/>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+            <Image
+              src="/tristone.png"
+              alt="Tristone Logo"
+              width={300}
+              height={150}
+              priority
+            />
+          </Box>
+          <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="600" fontSize="2.5rem" color="primary" mb={5}>
+            T-CIV Cumplimiento de Programación - TURNO {shift}
           </Typography>
           
           <TableContainer>

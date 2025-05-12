@@ -13,15 +13,21 @@ export async function GET() {
     }).select('stationName quantity mandrelConfig');
 
     // Format the data
-    const formattedData = currentDocs.map(doc => ({
-      autoclave: doc.stationName,
-      ciclosTMES: doc.quantity || 0,
-      mandriles: doc.mandrelConfig?.length || 0,
-      piezasProgramadas: 0, // We'll get this from captures
-      piezasBuenas: 0, // We'll get this from captures
-      piezasMalas: 0, // We'll get this from captures
-      piezasTotal: 0 // We'll get this from captures
-    }));
+    const formattedData = currentDocs.map(doc => {
+      const mandriles = doc.mandrelConfig?.length || 0;
+      const ciclosTMES = doc.quantity || 0;
+      const piezasProgramadas = mandriles * ciclosTMES;
+
+      return {
+        autoclave: doc.stationName,
+        ciclosTMES,
+        mandriles,
+        piezasProgramadas,
+        piezasBuenas: 0, // We'll get this from captures
+        piezasMalas: 0, // We'll get this from captures
+        piezasTotal: 0 // We'll get this from captures
+      };
+    });
 
     console.log(formattedData); 
     // Sort by autoclave name
