@@ -14,7 +14,11 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image';
@@ -48,6 +52,7 @@ export default function CapturePage() {
   const [clientName, setClientName] = useState('');
   const goodInputRef = useRef();
   const [isPrintSelected, setIsPrintSelected] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     const fetchStationAndMandrels = async () => {
@@ -167,6 +172,116 @@ export default function CapturePage() {
 
   const handlePrintToggle = () => {
     setIsPrintSelected(!isPrintSelected);
+  };
+
+  const handleGuardarClick = () => {
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmOpen(false);
+    if (isPrintSelected) {
+      handlePrintLabel();
+    } else {
+      handleSaveOnly();
+    }
+  };
+
+  const handleSaveOnly = () => {
+    // TODO: Implement save logic here (e.g., API call)
+    alert('Datos guardados (sin imprimir etiqueta)');
+  };
+
+  const handleCancel = () => {
+    setConfirmOpen(false);
+  };
+
+  const handlePrintLabel = () => {
+    const inspector = 'Eduardo'; // You can replace this with dynamic data if needed
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const sap = selectedMandrel?.reference || '';
+    const client = clientName || '';
+    const mandrel = selectedMandrel?.mandrel || '';
+    const station = stationName || '';
+    const labelHTML = `
+      <html>
+      <head>
+        <title>Etiqueta</title>
+        <style>
+          body { margin: 0; padding: 0; }
+          .label-container {
+            width: 260px;
+            border: 1px solid #2196f3;
+            padding: 12px 8px;
+            font-family: Arial, sans-serif;
+            margin: 24px auto;
+          }
+          .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 4px;
+          }
+          .main-sap {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+            color: #222;
+          }
+          .client {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #222;
+          }
+          .section {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            text-align: left;
+          }
+          .barcode {
+            margin: 8px 0 4px 0;
+            text-align: center;
+          }
+          .barcode img {
+            width: 180px;
+            height: 40px;
+          }
+          .footer {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: left;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="label-container">
+          <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Tristone_Flowtech_Group_logo.png" alt="Logo" style="height:32px;"/>
+          </div>
+          <div style="text-align:center;font-size:1.1rem;">${station}</div>
+          <div class="main-sap">${mandrel}</div>
+          <div class="client">Cliente: <b>${client}</b></div>
+          <div class="section">Estampado: 1<br/>Área de Muesca:<br/>Prueba de Fuga:</div>
+          <div class="section">SAP: ${sap}<br/>SAP: 5V${sap}</div>
+          <div class="barcode">
+            <img src="https://barcode.tec-it.com/barcode.ashx?data=${sap}&code=Code128&translate-esc=false" alt="barcode" />
+          </div>
+          <div class="footer">
+            Inspector: ${inspector}<br/>
+            Fecha/Hora: ${dateStr}
+          </div>
+        </div>
+        <script>window.onload = function() { window.print(); };</script>
+      </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.open();
+    printWindow.document.write(labelHTML);
+    printWindow.document.close();
   };
 
   if (loading) {
@@ -367,7 +482,13 @@ export default function CapturePage() {
                   {selectedMandrel?.reference || 'No disponible'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <Button variant="contained" color="success" size="large">
+                  <Button 
+                    variant="contained" 
+                    color="success" 
+                    size="large" 
+                    onClick={handleGuardarClick}
+                    disabled={!(Number(goodPieces) > 0 || Number(badPieces) > 0)}
+                  >
                     Guardar
                   </Button>
                   <IconButton 
@@ -621,6 +742,30 @@ export default function CapturePage() {
             </Grid>
           </Box>
         </Modal>
+
+        {/* Confirmation Modal */}
+        <Dialog open={confirmOpen} onClose={handleCancel}>
+          <DialogTitle>Confirmar acción</DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              {isPrintSelected
+                ? '¿Estás seguro de que deseas guardar y generar la etiqueta?'
+                : '¿Estás seguro de que deseas guardar los datos?'}
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 1 }}>
+              <Typography sx={{ fontSize: '1.3rem', color: 'primary.main' }}>
+                Piezas Buenas: <span style={{ fontWeight: 500 }}>{goodPieces || 0}</span>
+              </Typography>
+              <Typography sx={{ fontSize: '1.3rem', color: 'error.main' }}>
+                Piezas Malas: <span style={{ fontWeight: 500 }}>{badPieces || 0}</span>
+              </Typography>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCancel} color="inherit">Cancelar</Button>
+            <Button onClick={handleConfirm} color="success" variant="contained">Confirmar</Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Box>
   );
