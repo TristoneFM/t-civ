@@ -24,17 +24,45 @@ import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image';
 import PrintIcon from '@mui/icons-material/Print';
 import { toast } from 'react-toastify';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const DEFECT_OPTIONS = [
-  'Ampollas', 'Contaminacion', 'Cortas', 'Corte angular',
-  'Daño en mandril', 'Daño externo', 'Daño interno', 'ER Canal Interno',
-  'ER Cubierta suelta', 'ER Diametro abierto', 'ER Diametro cerrado', 'ER Doble golpe de',
-  'ER Encogimiento', 'ER espesor alto', 'ER espesor bajo', 'ER Grumos',
-  'ER Longitud corta', 'ER Longitud larga', 'ER Mal Tejido', 'ER Marca de rodillo',
-  'ER Porosidad de h', 'Falta de tapa', 'Largas', 'Marca de guante',
-  'Material acumulad', 'Porosidad', 'Problema de mues', 'Punta dañada',
-  'Rebaba', 'Ruptura en la curv', 'Ruptura en punta', 'SCRAP Auditorias',
-  'Suciedad de Mand', 'Tapa corta', 'Tapa costilluda'
+  { id: 1, name: 'Ampollas' },
+  { id: 2, name: 'Contaminacion' },
+  { id: 3, name: 'Cortas' },
+  { id: 4, name: 'Corte angular' },
+  { id: 5, name: 'Daño en mandril' },
+  { id: 6, name: 'Daño externo' },
+  { id: 7, name: 'Daño interno' },
+  { id: 8, name: 'ER Canal Interno' },
+  { id: 9, name: 'ER Cubierta suelta' },
+  { id: 10, name: 'ER Diametro abierto' },
+  { id: 11, name: 'ER Diametro cerrado' },
+  { id: 12, name: 'ER Doble golpe de' },
+  { id: 13, name: 'ER Encogimiento' },
+  { id: 14, name: 'ER espesor alto' },
+  { id: 15, name: 'ER espesor bajo' },
+  { id: 16, name: 'ER Grumos' },
+  { id: 17, name: 'ER Longitud corta' },
+  { id: 18, name: 'ER Longitud larga' },
+  { id: 19, name: 'ER Mal Tejido' },
+  { id: 20, name: 'ER Marca de rodillo' },
+  { id: 21, name: 'ER Porosidad de h' },
+  { id: 22, name: 'Falta de tapa' },
+  { id: 23, name: 'Largas' },
+  { id: 24, name: 'Marca de guante' },
+  { id: 25, name: 'Material acumulad' },
+  { id: 26, name: 'Porosidad' },
+  { id: 27, name: 'Problema de mues' },
+  { id: 28, name: 'Punta dañada' },
+  { id: 29, name: 'Rebaba' },
+  { id: 30, name: 'Ruptura en la curv' },
+  { id: 31, name: 'Ruptura en punta' },
+  { id: 32, name: 'SCRAP Auditorias' },
+  { id: 33, name: 'Suciedad de Mand' },
+  { id: 34, name: 'Tapa corta' },
+  { id: 35, name: 'Tapa costilluda' }
 ];
 
 export default function CapturePage() {
@@ -54,6 +82,9 @@ export default function CapturePage() {
   const goodInputRef = useRef();
   const [isPrintSelected, setIsPrintSelected] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     const fetchStation = async () => {
@@ -185,18 +216,76 @@ export default function CapturePage() {
     setConfirmOpen(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setConfirmOpen(false);
     if (isPrintSelected) {
-      handlePrintLabel();
+      // Save first, then print, then show success modal
+      const saveResult = await handleSaveOnly(true); // pass flag to not show modal yet
+      if (saveResult) {
+        handlePrintLabel();
+        setSuccessOpen(true);
+      }
     } else {
-      handleSaveOnly();
+      await handleSaveOnly();
     }
   };
 
-  const handleSaveOnly = () => {
-    // TODO: Implement save logic here (e.g., API call)
-    alert('Datos guardados (sin imprimir etiqueta)');
+  const handleSaveOnly = async (noModal) => {
+    try {
+      const inspector = 'Eduardo'; // Replace with dynamic value if needed
+      const now = new Date();
+      const pad = (n) => n.toString().padStart(2, '0');
+      const fecha_hora = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const defects = selectedDefects.map(d => {
+        const defectObj = DEFECT_OPTIONS.find(opt => opt.name === d.name);
+        return defectObj ? { defect_id: defectObj.id, defect_count: d.count } : null;
+      }).filter(Boolean);
+      const payload = {
+        station_name: stationName,
+        mandrel: selectedMandrel?.mandrel || '',
+        client: clientName,
+        sap_number: selectedMandrel?.reference || '',
+        inspector,
+        fecha_hora,
+        piezas_buenas: Number(goodPieces) || 0,
+        piezas_malas: Number(badPieces) || 0,
+        defects
+      };
+      const response = await fetch('/api/captures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        if (!noModal) setSuccessOpen(true);
+        return true;
+      } else {
+        setErrorMsg(data.error || 'Error al guardar los datos');
+        setErrorOpen(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error al guardar:', error);
+      setErrorMsg('Error al guardar los datos');
+      setErrorOpen(true);
+      return false;
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setSuccessOpen(false);
+    // Reset form state
+    setSelectedMandrel(null);
+    setClientName('');
+    setGoodPieces('');
+    setBadPieces('');
+    setSelectedDefects([]);
+    setIsPrintSelected(false);
+  };
+
+  const handleErrorClose = () => {
+    setErrorOpen(false);
   };
 
   const handleCancel = () => {
@@ -561,7 +650,7 @@ export default function CapturePage() {
             </Typography>
             <Grid container spacing={1}>
               {DEFECT_OPTIONS.map((defect, idx) => {
-                const found = selectedDefects.find((d) => d.name === defect);
+                const found = selectedDefects.find((d) => d.name === defect.name);
                 const count = found ? found.count : 0;
                 return (
                   <Grid item xs={6} sm={4} md={3} lg={2} key={idx}>
@@ -585,9 +674,9 @@ export default function CapturePage() {
                           minWidth: 200,
                           maxWidth: 200
                         }}
-                        onClick={() => handleDefectClick(defect)}
+                        onClick={() => handleDefectClick(defect.name)}
                       >
-                        {count > 0 ? `(${count}) ` : ''}{defect}
+                        {count > 0 ? `(${count}) ` : ''}{defect.name}
                       </Button>
                       {count > 0 && (
                         <IconButton
@@ -605,7 +694,7 @@ export default function CapturePage() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDefectDelete(defect);
+                            handleDefectDelete(defect.name);
                           }}
                         >
                           <CloseIcon fontSize="small" />
@@ -767,6 +856,70 @@ export default function CapturePage() {
           <DialogActions>
             <Button onClick={handleCancel} color="inherit">Cancelar</Button>
             <Button onClick={handleConfirm} color="success" variant="contained">Confirmar</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Success Modal */}
+        <Dialog
+          open={successOpen}
+          onClose={handleSuccessClose}
+          aria-labelledby="success-dialog-title"
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle id="success-dialog-title" sx={{ textAlign: 'center' }}>
+            <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 1 }} />
+            <Typography variant="h5" component="div">
+              ¡Guardado Exitoso!
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ textAlign: 'center', fontSize: '1.1rem' }}>
+              Los datos se guardaron correctamente.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+            <Button 
+              onClick={handleSuccessClose} 
+              color="primary" 
+              variant="contained"
+              size="large"
+              sx={{ minWidth: '150px' }}
+            >
+              Continuar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Error Modal */}
+        <Dialog
+          open={errorOpen}
+          onClose={handleErrorClose}
+          aria-labelledby="error-dialog-title"
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle id="error-dialog-title" sx={{ textAlign: 'center' }}>
+            <CancelIcon color="error" sx={{ fontSize: 60, mb: 1 }} />
+            <Typography variant="h5" component="div">
+              Error al Guardar
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ textAlign: 'center', fontSize: '1.1rem' }}>
+              Algunos seriales no se guardaron correctamente. Por favor verifique todos los seriales escaneados.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+            <Button 
+              onClick={handleErrorClose} 
+              color="primary" 
+              variant="contained"
+              size="large"
+              sx={{ minWidth: '150px' }}
+            >
+              Cerrar
+            </Button>
           </DialogActions>
         </Dialog>
       </Paper>
