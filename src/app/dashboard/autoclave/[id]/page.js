@@ -23,6 +23,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image';
 import PrintIcon from '@mui/icons-material/Print';
+import { toast } from 'react-toastify';
 
 const DEFECT_OPTIONS = [
   'Ampollas', 'Contaminacion', 'Cortas', 'Corte angular',
@@ -55,36 +56,42 @@ export default function CapturePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
-    const fetchStationAndMandrels = async () => {
+    const fetchStation = async () => {
       try {
         // Fetch station details
         const stationResponse = await fetch(`/api/autoclaves/${params.id}`);
         if (!stationResponse.ok) {
-          throw new Error('Failed to fetch station details');
+          toast.error('Error al obtener detalles de la estación');
+          return;
         }
         const stationData = await stationResponse.json();
         setStationName(stationData.stationName);
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error(error.message || 'Ocurrió un error inesperado');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStation();
+  }, [params.id]);
 
-        // Fetch mandrels for this station
-        const mandrelsResponse = await fetch(`/api/mandrels?stationName=${encodeURIComponent(stationData.stationName)}`);
+  const handleOpenModal = async () => {
+    setOpenModal(true);
+    if (mandrels.length === 0 && stationName) {
+      try {
+        const mandrelsResponse = await fetch(`/api/mandrels?stationName=${encodeURIComponent(stationName)}`);
         if (!mandrelsResponse.ok) {
-          throw new Error('Failed to fetch mandrels');
+          toast.error('No se encontraron mandriles para esta estación');
+          return;
         }
         const mandrelsData = await mandrelsResponse.json();
         setMandrels(mandrelsData);
       } catch (error) {
         console.error('Error:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+        toast.error(error.message || 'Ocurrió un error inesperado');
       }
-    };
-
-    fetchStationAndMandrels();
-  }, [params.id]);
-
-  const handleOpenModal = () => {
-    setOpenModal(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -101,7 +108,7 @@ export default function CapturePage() {
       setClientName(data.client);
     } catch (error) {
       console.error('Error fetching client details:', error);
-      setError('Error fetching client details');
+      toast.error('Error al obtener detalles del cliente');
       setClientName('No disponible');
     }
   };
@@ -293,11 +300,7 @@ export default function CapturePage() {
   }
 
   if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="error">Error: {error}</Typography>
-      </Box>
-    );
+    // Error UI is now handled by toast notifications
   }
 
   return (
@@ -654,7 +657,7 @@ export default function CapturePage() {
             </Box>
 
             <Grid container spacing={2}>
-              {mandrels.map((mandrel, index) => (
+              {mandrels.length > 0 && mandrels.map((mandrel, index) => (
                 <Grid item xs={3} sm={2} md={2} lg={1.5} key={index}>
                   <Box
                     onClick={() => handleMandrelSelect(mandrel)}
