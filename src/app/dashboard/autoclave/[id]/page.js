@@ -413,7 +413,7 @@ export default function CapturePage() {
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3, alignItems: 'center' }}>
-          <Typography variant="h3" component="h1" fontWeight="600" color="primary" align="center">
+          <Typography variant="h2" component="h1" fontWeight="600" color="primary" align="center" sx={{ fontSize: '3rem' }}>
             {stationName || 'Cargando...'}
           </Typography>
           <Button
@@ -421,12 +421,15 @@ export default function CapturePage() {
             onClick={handleOpenModal}
             sx={{ 
               textTransform: 'none',
-              fontWeight: 400
+              fontWeight: 400,
+              fontSize: '1.4rem',
+              py: 1.5,
+              px: 4
             }}
             color="success"
             size="large"
           >
-            Seleccionar Mandril
+            SELECCIONAR MANDRIL
           </Button>
         </Box>
 
@@ -504,6 +507,7 @@ export default function CapturePage() {
                         }}
                         inputRef={goodInputRef}
                         onFocus={handleGoodPiecesFocus}
+                        sx={{ fontSize: '1.9rem' }}
                       />
                       {showGoodKeypad && (
                         <Box sx={{ 
@@ -591,6 +595,7 @@ export default function CapturePage() {
                     size="large" 
                     onClick={handleGuardarClick}
                     disabled={!(Number(goodPieces) > 0 || Number(badPieces) > 0)}
+                    sx={{ fontSize: '1.6rem' }}
                   >
                     Guardar
                   </Button>
@@ -676,7 +681,7 @@ export default function CapturePage() {
                           width: 250,
                           height: 100,
                           textTransform: 'none',
-                          fontSize: '0.95rem',
+                          fontSize: '1.3rem',
                           mb: 1,
                           display: 'flex',
                           alignItems: 'center',
@@ -684,8 +689,8 @@ export default function CapturePage() {
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          minWidth: 200,
-                          maxWidth: 200
+                          minWidth: 280,
+                          maxWidth: 280
                         }}
                         onClick={() => handleDefectClick(defect.name)}
                       >

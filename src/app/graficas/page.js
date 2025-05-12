@@ -28,7 +28,7 @@ export default function GraficasPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/graficas');
+        const response = await fetch(`/api/graficas?shift=${shift}`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -41,8 +41,10 @@ export default function GraficasPage() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (shift) {
+      fetchData();
+    }
+  }, [shift]);
 
   if (loading) {
     return (
@@ -108,7 +110,7 @@ export default function GraficasPage() {
                       py: 2
                     }}
                   >
-                    Ciclos TMES
+                    Ciclos T-MES
                   </TableCell>
                   <TableCell 
                     sx={{ 

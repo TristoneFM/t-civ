@@ -145,7 +145,7 @@ export default function SelectAutoclave() {
               }}
             >
               {stations.map((station) => (
-                <MenuItem key={station._id} value={station._id}>
+                <MenuItem key={station._id} value={station._id} sx={{ fontSize: '1.3rem' }}>
                   {station.stationName}
                 </MenuItem>
               ))}
