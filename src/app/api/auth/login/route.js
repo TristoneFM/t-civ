@@ -17,7 +17,8 @@ export async function POST(request) {
       `SELECT acc_id, acc_inventario 
        FROM empleados.del_accesos 
        WHERE acc_id = ?`,
-      [employeeId]
+      [employeeId],
+      'empleados'
     );
 
     if (employees.length === 0) {
