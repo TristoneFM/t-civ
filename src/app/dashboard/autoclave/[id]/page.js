@@ -130,6 +130,13 @@ export default function CapturePage() {
   };
 
   const handleMandrelSelect = async (mandrel) => {
+    // Reset all form fields
+    setGoodPieces('');
+    setBadPieces('');
+    setSelectedDefects([]);
+    setIsPrintSelected(false);
+    
+    // Set the new mandrel
     setSelectedMandrel(mandrel);
     handleCloseModal();
     
