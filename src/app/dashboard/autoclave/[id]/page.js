@@ -271,7 +271,15 @@ export default function CapturePage() {
                         onFocus={handleGoodPiecesFocus}
                       />
                       {showGoodKeypad && (
-                        <Box sx={{ mt: 1, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          mt: 1, 
+                          mb: 2, 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          alignItems: 'center',
+                          position: 'relative',
+                          zIndex: 1000
+                        }}>
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             {[1,2,3].map(n => (
                               <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick(String(n))}>{n}</Button>
@@ -392,6 +400,8 @@ export default function CapturePage() {
               borderRadius: 2,
               width: '100%',
               maxWidth: 'none',
+              marginTop: showGoodKeypad ? '200px' : '24px',
+              transition: 'margin-top 0.3s ease'
             }}
           >
             <Typography variant="h6" component="div" gutterBottom>
