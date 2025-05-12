@@ -41,9 +41,10 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      employeeId: employee.acc_id,
+      employeeId: employee.emp_num,
       accessLevel,
-      permissions
+      permissions,
+      employeeName: employee.emp_name
     });
 
   } catch (error) {

@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
   const [permissions, setPermissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loginError, setLoginError] = useState('');
+  const [employeeName, setEmployeeName] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -47,9 +48,11 @@ export function AuthProvider({ children }) {
       // Store employee ID and permissions
       localStorage.setItem('employeeId', data.employeeId);
       localStorage.setItem('permissions', JSON.stringify(data.permissions));
+      localStorage.setItem('employeeName', data.employeeName);
       
       setEmployeeId(data.employeeId);
       setPermissions(data.permissions);
+      setEmployeeName(data.employeeName);
       
       return { success: true };
     } catch (error) {
@@ -62,8 +65,10 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('employeeId');
     localStorage.removeItem('permissions');
+    localStorage.removeItem('employeeName');
     setEmployeeId(null);
     setPermissions([]);
+    setEmployeeName('');
     router.push('/login');
   };
 
@@ -94,7 +99,8 @@ export function AuthProvider({ children }) {
       logout, 
       isAuthenticated,
       loginError,
-      hasPermission
+      hasPermission,
+      employeeName
     }}>
       {children}
     </AuthContext.Provider>

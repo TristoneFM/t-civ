@@ -26,6 +26,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import { toast } from 'react-toastify';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { useAuth } from '@/app/context/AuthContext';
 
 const DEFECT_OPTIONS = [
   { id: 1, name: 'Ampollas' },
@@ -85,7 +86,7 @@ export default function CapturePage() {
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
+  const { employeeName, employeeId } = useAuth();
   useEffect(() => {
     const fetchStation = async () => {
       try {
@@ -239,7 +240,7 @@ export default function CapturePage() {
 
   const handleSaveOnly = async (noModal) => {
     try {
-      const inspector = 'Eduardo'; // Replace with dynamic value if needed
+      const inspector = employeeId; // Replace with dynamic value if needed
       const now = new Date();
       const pad = (n) => n.toString().padStart(2, '0');
       const fecha_hora = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
@@ -592,6 +593,7 @@ export default function CapturePage() {
                   >
                     Guardar
                   </Button>
+                  {/* Print button temporarily disabled
                   <IconButton 
                     onClick={handlePrintToggle}
                     sx={{ 
@@ -603,6 +605,7 @@ export default function CapturePage() {
                   >
                     <PrintIcon fontSize="large" />
                   </IconButton>
+                  */}
                 </Box>
               </Paper>
             </Grid>

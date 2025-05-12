@@ -5,8 +5,8 @@ import ThemeRegistry from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Inventario Físico",
-  description: "Sistema de Inventario Físico",
+  title: "T-CIV",
+  description: "Sistema de Inspeccion de Autoclaves",
 };
 
 export default function RootLayout({ children }) {
