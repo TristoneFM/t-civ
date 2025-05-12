@@ -5,7 +5,9 @@ const currentSchema = new mongoose.Schema({
   mandrelConfig: [{
     mandrel: String,
     status: String
-  }]
+  }],
+  quantity: Number,
+  
 }, { 
   collection: 'currents' 
 });
