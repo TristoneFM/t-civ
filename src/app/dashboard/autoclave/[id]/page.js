@@ -86,7 +86,7 @@ export default function CapturePage() {
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const { employeeName, employeeId } = useAuth();
+  const { employeeName, employeeId, currentShift } = useAuth();
   useEffect(() => {
     const fetchStation = async () => {
       try {
@@ -257,7 +257,8 @@ export default function CapturePage() {
         fecha_hora,
         piezas_buenas: Number(goodPieces) || 0,
         piezas_malas: Number(badPieces) || 0,
-        defects
+        defects,
+        shift: currentShift
       };
       const response = await fetch('/api/captures', {
         method: 'POST',

@@ -13,7 +13,8 @@ export async function POST(request) {
       fecha_hora,
       piezas_buenas,
       piezas_malas,
-      defects // array of { defect_id, defect_count }
+      defects, // array of { defect_id, defect_count }
+      shift
     } = body;
 
     if (!station_name || !mandrel || !sap_number || !fecha_hora) {
@@ -22,9 +23,9 @@ export async function POST(request) {
 
     // Insert into captures
     const captureResult = await query(
-      `INSERT INTO captures (station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas],
+      `INSERT INTO captures (station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas,shift)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas, shift],
       't-civ'
     );
     const capture_id = captureResult.insertId;

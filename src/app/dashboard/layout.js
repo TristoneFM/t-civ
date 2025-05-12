@@ -16,14 +16,15 @@ import { useAuth } from '../context/AuthContext';
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { employeeId, logout, permissions, employeeName } = useAuth();
+  const { employeeId, logout, permissions, employeeName, currentShift } = useAuth();
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <AppBar position="fixed">
         <Toolbar>
           <Typography variant="h7" noWrap component="div" sx={{ flexGrow: 1 }}>
-            EMPLEADO: {employeeId} - {employeeName}
+            EMPLEADO: {employeeId} - {employeeName} -
+            TURNO: {currentShift}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
