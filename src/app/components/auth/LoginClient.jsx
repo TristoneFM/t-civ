@@ -29,7 +29,6 @@ export default function LoginClient() {
   const router = useRouter();
   const { login, loginError } = useAuth();
   const theme = useTheme();
-  const [showKeypad, setShowKeypad] = useState(false);
   const inputRef = useRef();
 
   const handleKeypadClick = (val) => {
@@ -43,12 +42,8 @@ export default function LoginClient() {
     if (inputRef.current) inputRef.current.focus();
   };
 
-  const handleInputFocus = () => {
-    setShowKeypad(true);
-  };
-
   const handleFormSubmit = async (e) => {
-    setShowKeypad(false);
+    e.preventDefault();
     await handleSubmit(e);
   };
 
@@ -87,7 +82,6 @@ export default function LoginClient() {
   };
 
   const handleKeypadEnter = async () => {
-    setShowKeypad(false);
     // Submit the form
     await handleSubmit({ preventDefault: () => {} });
   };
@@ -173,7 +167,6 @@ export default function LoginClient() {
               disabled={isLoading}
               sx={{ mb: 3 }}
               inputRef={inputRef}
-              onFocus={handleInputFocus}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -184,38 +177,36 @@ export default function LoginClient() {
                 readOnly: true
               }}
             />
-            {showKeypad && (
-              <Box sx={{
-                mt: 1,
-                mb: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                position: 'relative',
-                zIndex: 1000
-              }}>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {[1,2,3].map(n => (
-                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  {[4,5,6].map(n => (
-                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  {[7,8,9].map(n => (
-                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                  <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('back')}>&larr;</Button>
-                  <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('0')}>0</Button>
-                  <Button variant="contained" color="primary" sx={{ width: 56, height: 56, fontSize:15 }} onMouseDown={handleKeypadEnter}>Enter</Button>
-                </Box>
+            <Box sx={{
+              mt: 1,
+              mb: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              position: 'relative',
+              zIndex: 1000
+            }}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {[1,2,3].map(n => (
+                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                ))}
               </Box>
-            )}
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                {[4,5,6].map(n => (
+                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                ))}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                {[7,8,9].map(n => (
+                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                ))}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('back')}>&larr;</Button>
+                <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('0')}>0</Button>
+                <Button variant="contained" color="primary" sx={{ width: 56, height: 56, fontSize:15 }} onMouseDown={handleKeypadEnter}>Enter</Button>
+              </Box>
+            </Box>
             
             <Button
               type="submit"

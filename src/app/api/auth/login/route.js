@@ -14,11 +14,11 @@ export async function POST(request) {
 
     // Query the database to check if the employee exists and get their access level
     const employees = await query(
-      `SELECT acc_id, acc_inventario 
-       FROM empleados.del_accesos 
-       WHERE acc_id = ?`,
+      `SELECT emp_num, emp_name 
+       FROM b10.empleados 
+       WHERE emp_num = ?`,
       [employeeId],
-      'empleados'
+      'b10'
     );
 
     if (employees.length === 0) {

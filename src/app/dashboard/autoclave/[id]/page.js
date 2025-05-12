@@ -419,8 +419,10 @@ export default function CapturePage() {
             onClick={handleOpenModal}
             sx={{ 
               textTransform: 'none',
-              fontWeight: 500
+              fontWeight: 400
             }}
+            color="success"
+            size="large"
           >
             Seleccionar Mandril
           </Button>
