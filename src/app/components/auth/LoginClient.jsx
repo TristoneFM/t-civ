@@ -51,7 +51,7 @@ export default function LoginClient() {
     try {
       const result = await login(employeeIdFormatted.trim());
       if (result.success) {
-        router.push('/dashboard');
+        router.push('/dashboard/select-autoclave');
       } else {
         setEmployeeId('');
         setError(result.error || 'Error al iniciar sesión');

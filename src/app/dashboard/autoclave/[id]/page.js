@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Box,
@@ -17,6 +17,7 @@ import {
   Chip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import Image from 'next/image';
 
 const DEFECT_OPTIONS = [
   'Ampollas', 'Contaminacion', 'Cortas', 'Corte angular',
@@ -42,6 +43,8 @@ export default function CapturePage() {
   const [goodPieces, setGoodPieces] = useState('');
   const [badPieces, setBadPieces] = useState('');
   const [selectedDefects, setSelectedDefects] = useState([]);
+  const [showGoodKeypad, setShowGoodKeypad] = useState(false);
+  const goodInputRef = useRef();
 
   useEffect(() => {
     const fetchStationAndMandrels = async () => {
@@ -135,6 +138,20 @@ export default function CapturePage() {
     }
   };
 
+  const handleGoodPiecesFocus = () => setShowGoodKeypad(true);
+  const handleGoodKeypadEnter = () => setShowGoodKeypad(false);
+
+  const handleGoodKeypadClick = (val) => {
+    if (val === 'clear') {
+      setGoodPieces('');
+    } else if (val === 'back') {
+      setGoodPieces((prev) => prev.slice(0, -1));
+    } else {
+      setGoodPieces((prev) => (prev === '0' ? val : prev + val));
+    }
+    if (goodInputRef.current) goodInputRef.current.focus();
+  };
+
   if (loading) {
     return (
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
@@ -162,8 +179,8 @@ export default function CapturePage() {
           borderRadius: 2
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="h1" fontWeight="600">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3, alignItems: 'center' }}>
+          <Typography variant="h3" component="h1" fontWeight="600" color="primary" align="center">
             {stationName || 'Cargando...'}
           </Typography>
           <Button
@@ -179,136 +196,265 @@ export default function CapturePage() {
         </Box>
 
         {selectedMandrel && (
-          <>
-            <Paper
-              elevation={1}
-              sx={{
-                mt: 2,
-                p: 3,
-                bgcolor: 'background.default',
-                borderRadius: 2,
-                border: `2px solid ${getMandrelColor(selectedMandrel.status)}`,
-                position: 'relative'
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
+          <Grid container spacing={3}>
+            {/* Left: Mandril Seleccionado and Piezas */}
+            <Grid item xs={4} sx={{ flex: '1 1 0', minWidth: 0 }}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: 3,
+                  bgcolor: 'background.default',
+                  borderRadius: 2,
+                  border: `2px solid ${getMandrelColor(selectedMandrel.status)}`,
+                  position: 'relative',
+                  height: 350,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: getMandrelColor(selectedMandrel.status),
+                      flexShrink: 0
+                    }}
+                  />
+                  <Box>
+                    <Typography variant="h6" component="div" gutterBottom>
+                      Mandril Seleccionado
+                    </Typography>
+                    <Typography variant="h4" component="div" fontWeight="600" color="primary">
+                      {selectedMandrel.mandrel}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Paper
+                  elevation={0}
                   sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    bgcolor: getMandrelColor(selectedMandrel.status),
-                    flexShrink: 0
+                    mt: 3,
+                    p: 3,
+                    bgcolor: 'background.default',
+                    borderRadius: 2
+                  }}
+                >
+                  {/* Labels row */}
+                  <Grid container spacing={18} sx={{ mb: 1 }}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="primary">
+                        Piezas Buenas
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="error">
+                        Piezas Malas
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                  {/* Inputs row */}
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label=""
+                        value={goodPieces}
+                        onChange={handleGoodPiecesChange}
+                        type="text"
+                        inputProps={{ inputMode: 'none', pattern: '[0-9]*', readOnly: true }}
+                        InputProps={{
+                          endAdornment: <InputAdornment position="end">pzas</InputAdornment>,
+                        }}
+                        inputRef={goodInputRef}
+                        onFocus={handleGoodPiecesFocus}
+                      />
+                      {showGoodKeypad && (
+                        <Box sx={{ mt: 1, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            {[1,2,3].map(n => (
+                              <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick(String(n))}>{n}</Button>
+                            ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                            {[4,5,6].map(n => (
+                              <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick(String(n))}>{n}</Button>
+                            ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                            {[7,8,9].map(n => (
+                              <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick(String(n))}>{n}</Button>
+                            ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                            <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick('back')}>&larr;</Button>
+                            <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleGoodKeypadClick('0')}>0</Button>
+                            <Button variant="contained" color="success" sx={{ width: 56, height: 56, fontSize:15 }} onMouseDown={handleGoodKeypadEnter}>Enter</Button>
+                          </Box>
+                        </Box>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label=""
+                        value={badPieces}
+                        onChange={handleBadPiecesChange}
+                        type="text"
+                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                        InputProps={{
+                          endAdornment: <InputAdornment position="end">pzas</InputAdornment>,
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Paper>
+            </Grid>
+            {/* Center: Cliente, SAP Number, Guardar */}
+            <Grid item xs={4} sx={{ flex: '1 1 0', minWidth: 0 }}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: 3,
+                  bgcolor: 'background.default',
+                  borderRadius: 2,
+                  height: 350,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 2,
+                  width: '100%'
+                }}
+              >
+                <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="text.secondary">
+                  Cliente
+                </Typography>
+                <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 2 }}>
+                  {/* Replace with actual client value if available */}
+                  Ejemplo Cliente
+                </Typography>
+                <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="text.secondary">
+                  SAP Number
+                </Typography>
+                <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 2 }}>
+                  {/* Replace with actual SAP number if available */}
+                  12345678
+                </Typography>
+                <Button variant="contained" color="success" size="large">
+                  Guardar
+                </Button>
+              </Paper>
+            </Grid>
+            {/* Right: Image */}
+            <Grid item xs={4} sx={{ flex: '1 1 0', minWidth: 0 }}>
+              <Paper
+                elevation={2}
+                sx={{
+                  p: 3,
+                  bgcolor: 'background.default',
+                  borderRadius: 2,
+                  height: 350,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxSizing: 'border-box',
+                  overflow: 'hidden',
+                  width: '100%'
+                }}
+              >
+                <Image
+                  src="/tristone.png"
+                  alt="Vista de referencia"
+                  width={350}
+                  height={350}
+                  style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: 350 }}
+                  onError={(e) => {
+                    e.target.src = '/placeholder.png';
+                    e.target.onerror = null;
                   }}
                 />
-                <Box>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Mandril Seleccionado
-                  </Typography>
-                  <Typography variant="h4" component="div" fontWeight="600" color="primary">
-                    {selectedMandrel.mandrel}
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
+              </Paper>
+            </Grid>
+          </Grid>
+        )}
 
-            <Paper
-              elevation={1}
-              sx={{
-                mt: 3,
-                p: 3,
-                bgcolor: 'background.default',
-                borderRadius: 2
-              }}
-            >
-              <Typography variant="h6" component="div" gutterBottom>
-                Registro de Piezas
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Piezas Buenas"
-                    value={goodPieces}
-                    onChange={handleGoodPiecesChange}
-                    type="text"
-                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                    InputProps={{
-                      endAdornment: <InputAdornment position="end">pzas</InputAdornment>,
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Piezas Malas"
-                    value={badPieces}
-                    onChange={handleBadPiecesChange}
-                    type="text"
-                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                    InputProps={{
-                      endAdornment: <InputAdornment position="end">pzas</InputAdornment>,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-              {selectedDefects.length > 0 && (
-                <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {selectedDefects.map((defect, idx) => (
-                    <Chip
-                      key={idx}
-                      label={`${defect.name} x${defect.count}`}
-                      color="error"
-                      onDelete={() => handleDefectDelete(defect.name)}
-                    />
-                  ))}
-                </Box>
-              )}
-            </Paper>
-
-            <Paper
-              elevation={1}
-              sx={{
-                mt: 3,
-                p: 3,
-                bgcolor: 'background.default',
-                borderRadius: 2
-              }}
-            >
-              <Typography variant="h6" component="div" gutterBottom>
-                Seleccionar Defectos
-              </Typography>
-              <Grid container spacing={1}>
-                {DEFECT_OPTIONS.map((defect, idx) => (
+        {/* Defectos section restored below the split */}
+        {selectedMandrel && (
+          <Paper
+            elevation={1}
+            sx={{
+              mt: 3,
+              p: 3,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+              width: '100%',
+              maxWidth: 'none',
+            }}
+          >
+            <Typography variant="h6" component="div" gutterBottom>
+              Seleccionar Defectos
+            </Typography>
+            <Grid container spacing={1}>
+              {DEFECT_OPTIONS.map((defect, idx) => {
+                const found = selectedDefects.find((d) => d.name === defect);
+                const count = found ? found.count : 0;
+                return (
                   <Grid item xs={6} sm={4} md={3} lg={2} key={idx}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      sx={{
-                        width: 200,
-                        height: 50,
-                        textTransform: 'none',
-                        fontSize: '0.95rem',
-                        mb: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        minWidth: 200,
-                        maxWidth: 200
-                      }}
-                      onClick={() => handleDefectClick(defect)}
-                    >
-                      {defect}
-                    </Button>
+                    <Box sx={{ position: 'relative', width: '100%' }}>
+                      <Button
+                        variant="contained"
+                        color={count > 0 ? 'error' : 'primary'}
+                        fullWidth
+                        sx={{
+                          width: 250,
+                          height: 100,
+                          textTransform: 'none',
+                          fontSize: '0.95rem',
+                          mb: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minWidth: 200,
+                          maxWidth: 200
+                        }}
+                        onClick={() => handleDefectClick(defect)}
+                      >
+                        {count > 0 ? `(${count}) ` : ''}{defect}
+                      </Button>
+                      {count > 0 && (
+                        <IconButton
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            right: 4,
+                            top: 4,
+                            zIndex: 2,
+                            bgcolor: 'white',
+                            color: 'error.main',
+                            border: '1px solid',
+                            borderColor: 'error.main',
+                            p: 0.5
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDefectDelete(defect);
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
                   </Grid>
-                ))}
-              </Grid>
-            </Paper>
-          </>
+                );
+              })}
+            </Grid>
+          </Paper>
         )}
 
         {/* Mandrel Selection Modal */}

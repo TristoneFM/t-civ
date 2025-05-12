@@ -5,8 +5,9 @@ import Station from '@/app/models/Autoclave';
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    
-    const station = await Station.findById(params.id)
+
+    const resolvedParams = await params;
+    const station = await Station.findById(resolvedParams.id)
       .select('_id stationName plantCode');
 
     if (!station) {
@@ -18,9 +19,9 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(station);
   } catch (error) {
-    console.error('Error fetching station:', error);
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Error fetching station' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
