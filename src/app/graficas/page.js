@@ -244,6 +244,7 @@ export default function GraficasPage() {
                             : 0;
                           if (percentage >= 95) return '#4caf50'; // green
                           if (percentage >= 85) return '#ffeb3b'; // yellow
+                          if (percentage == 0) return '#808080'; //gray
                           return '#f44336'; // red
                         })()
                       }}
