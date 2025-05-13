@@ -42,7 +42,14 @@ export default function GraficasPage() {
     };
 
     if (shift) {
+      // Initial fetch
       fetchData();
+      
+      // Set up polling every 10 seconds
+      const intervalId = setInterval(fetchData, 10000);
+      
+      // Cleanup interval on component unmount
+      return () => clearInterval(intervalId);
     }
   }, [shift]);
 
