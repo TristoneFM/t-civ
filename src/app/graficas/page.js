@@ -237,6 +237,7 @@ export default function GraficasPage() {
                         fontSize: '1.9rem', 
                         py: 2, 
                         textAlign: 'center',
+                        color: 'white',                
                         bgcolor: (() => {
                           const percentage = row.piezasProgramadas > 0 
                             ? Math.round((row.piezasTotal / row.piezasProgramadas) * 100)
