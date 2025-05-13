@@ -90,7 +90,7 @@ export default function GraficasPage() {
             />
           </Box>
           <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="600" fontSize="3rem" color="primary" mb={5}>
-            Cumplimiento de Programación
+            Cumplimiento de Plan de Producción
             <br />
             Vulcanizado Turno {shift}
           </Typography>
@@ -227,7 +227,7 @@ export default function GraficasPage() {
                       }
                     }}
                   >
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.autoclave}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold', color: 'primary.main' }}>{row.autoclave}</TableCell>
                     <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.ciclosTMES}</TableCell>
                     <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.mandriles}</TableCell>
                     <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.piezasProgramadas}</TableCell>
