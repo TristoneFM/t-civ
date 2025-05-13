@@ -42,7 +42,16 @@ export async function GET(request) {
 
     // Format the data
     const formattedData = currentDocs.map(doc => {
-      const mandriles = doc.mandrelConfig?.length || 0;
+      // Convert MongoDB document to plain object if needed
+      const mandrelConfigArray = Array.isArray(doc.mandrelConfig) 
+        ? doc.mandrelConfig.map(config => config.toObject ? config.toObject() : config)
+        : [];
+      
+      const mandriles = mandrelConfigArray.reduce((sum, config) => {
+        const quantity = Number(config.quantity) || 0;
+        return sum + quantity;
+      }, 0);
+      
       const ciclosTMES = doc.quantity || 0;
       const piezasProgramadas = mandriles * ciclosTMES;
 
