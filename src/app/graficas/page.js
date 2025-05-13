@@ -92,7 +92,7 @@ export default function GraficasPage() {
           <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="600" fontSize="3rem" color="primary" mb={5}>
             Cumplimiento de Programación
             <br />
-            TURNO {shift}
+            Vulcanizado Turno {shift}
           </Typography>
           
           <TableContainer>
