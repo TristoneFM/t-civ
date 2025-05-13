@@ -743,13 +743,14 @@ export default function CapturePage() {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: '95%',
-              maxWidth: 1200,
+              maxWidth: 2000,
               maxHeight: '90vh',
               bgcolor: 'background.paper',
               borderRadius: 2,
               boxShadow: 24,
               p: 3,
-              overflow: 'auto'
+              overflow: 'auto',
+              
             }}
           >
             <Box sx={{ 
@@ -768,24 +769,32 @@ export default function CapturePage() {
             </Box>
 
             <Grid container spacing={2}>
-              {mandrels.length > 0 && mandrels.map((mandrel, index) => (
+              {mandrels.length > 0 && [...mandrels]
+                .sort((a, b) => {
+                  // Extract numbers from mandrel strings (e.g., "M1" -> 1)
+                  const numA = parseInt(a.mandrel.replace(/\D/g, ''));
+                  const numB = parseInt(b.mandrel.replace(/\D/g, ''));
+                  return numA - numB;
+                })
+                .map((mandrel, index) => (
                 <Grid item xs={3} sm={2} md={2} lg={1.5} key={index}>
                   <Box
                     onClick={() => handleMandrelSelect(mandrel)}
                     sx={{
                       height: 70,
-                      minWidth: 150,
+                      minWidth: 200,
                       border: `3px solid ${theme.palette.primary.main}`,
                       borderRadius: 2,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
+
                       bgcolor: selectedMandrel?.mandrel === mandrel.mandrel 
-                        ? `${theme.palette.primary.main}20`
-                        : 'transparent',
+                        ? '#808080'
+                        : theme.palette.primary.light,
                       '&:hover': {
-                        bgcolor: `${theme.palette.primary.main}10`,
+                        bgcolor: theme.palette.primary.dark,
                         transform: 'scale(1.02)',
                         transition: 'transform 0.2s ease-in-out'
                       },
@@ -810,9 +819,9 @@ export default function CapturePage() {
                         component="div" 
                         noWrap
                         sx={{
-                          color: theme.palette.primary.main,
+                          color: 'white',
                           fontWeight: selectedMandrel?.mandrel === mandrel.mandrel ? 700 : 500,
-                          fontSize: '1.25rem',
+                          fontSize: '2rem',
                           width: '100%',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis'
@@ -823,11 +832,12 @@ export default function CapturePage() {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: getMandrelColor(mandrel.status),
+                          color: 'white',
                           display: 'block',
                           width: '100%',
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
+                          fontSize: '1.2rem'
                         }}
                       >
                         {mandrel.status === 'available' ? 'Disponible' : 
