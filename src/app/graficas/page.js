@@ -105,7 +105,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -117,7 +117,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -129,7 +129,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -141,7 +141,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -155,7 +155,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -167,7 +167,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 2,
+                      py: 5,
                       textAlign: 'center'
                     }}
                   >
@@ -185,7 +185,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 1.5,
+                      py: 2.5,
                       textAlign: 'center'
                     }}
                   >
@@ -197,7 +197,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 1.5,
+                      py: 2.5,
                       textAlign: 'center'
                     }}
                   >
@@ -209,7 +209,7 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '2.3rem',
-                      py: 1.5,
+                      py: 2.5,
                       textAlign: 'center'
                     }}
                   >
@@ -227,17 +227,17 @@ export default function GraficasPage() {
                       }
                     }}
                   >
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.autoclave}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.mandriles}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 2, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.autoclave}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.mandriles}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
                     <TableCell 
                       sx={{ 
                         fontSize: '2.3rem', 
-                        py: 2, 
+                        py: 5, 
                         textAlign: 'center',
                         color: 'white',                
                         bgcolor: (() => {
