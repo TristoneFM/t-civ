@@ -26,6 +26,8 @@ import PrintIcon from '@mui/icons-material/Print';
 import { toast } from 'react-toastify';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '@/app/context/AuthContext';
 
 const DEFECT_OPTIONS = [
@@ -428,8 +430,9 @@ export default function CapturePage() {
             }}
             color="success"
             size="large"
+            startIcon={<AddCircleOutlineIcon sx={{ fontSize: 28 }} />}
           >
-            SELECCIONAR MANDRIL
+            Selecionar Mandrill
           </Button>
         </Box>
 
@@ -596,6 +599,7 @@ export default function CapturePage() {
                     onClick={handleGuardarClick}
                     disabled={!(Number(goodPieces) > 0 || Number(badPieces) > 0)}
                     sx={{ fontSize: '1.6rem' }}
+                    startIcon={<SaveIcon sx={{ fontSize: 28 }} />}
                   >
                     Guardar
                   </Button>
