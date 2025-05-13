@@ -53,7 +53,8 @@ export async function GET(request) {
       }, 0);
       
       const ciclosTMES = doc.quantity || 0;
-      const piezasProgramadas = mandriles * ciclosTMES;
+      let piezasProgramadas = (mandriles/2) * ciclosTMES;
+      piezasProgramadas = Math.floor(piezasProgramadas);
 
       // Find captures for this autoclave
       const autoclaveCapture = captures.find(c => c.station_name === doc.stationName) || { total_buenas: 0, total_malas: 0 };

@@ -103,7 +103,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 2
+                      py: 2,
+                      textAlign: 'center'
                     }}
                   >
                     Autoclave
@@ -114,7 +115,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 2
+                      py: 2,
+                      textAlign: 'center'
                     }}
                   >
                     Ciclos T-MES
@@ -125,7 +127,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 2
+                      py: 2,
+                      textAlign: 'center'
                     }}
                   >
                     Mandriles
@@ -136,7 +139,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 2
+                      py: 2,
+                      textAlign: 'center'
                     }}
                   >
                     Piezas Programadas
@@ -149,10 +153,23 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 2
+                      py: 2,
+                      textAlign: 'center'
                     }}
                   >
                     Piezas Producidas
+                  </TableCell>
+                  <TableCell 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      bgcolor: theme.palette.primary.main,
+                      color: 'white',
+                      fontSize: '1.9rem',
+                      py: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    % Cumplimiento
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -166,7 +183,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 1.5
+                      py: 1.5,
+                      textAlign: 'center'
                     }}
                   >
                     Buenas
@@ -177,7 +195,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 1.5
+                      py: 1.5,
+                      textAlign: 'center'
                     }}
                   >
                     Malas
@@ -188,7 +207,8 @@ export default function GraficasPage() {
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
                       fontSize: '1.9rem',
-                      py: 1.5
+                      py: 1.5,
+                      textAlign: 'center'
                     }}
                   >
                     Total
@@ -205,13 +225,32 @@ export default function GraficasPage() {
                       }
                     }}
                   >
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.autoclave}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.ciclosTMES}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.mandriles}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.piezasProgramadas}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.piezasBuenas}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.piezasMalas}</TableCell>
-                    <TableCell sx={{ fontSize: '1.9rem', py: 2 }}>{row.piezasTotal}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.autoclave}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.mandriles}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.9rem', py: 2, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
+                    <TableCell 
+                      sx={{ 
+                        fontSize: '1.9rem', 
+                        py: 2, 
+                        textAlign: 'center',
+                        bgcolor: (() => {
+                          const percentage = row.piezasProgramadas > 0 
+                            ? Math.round((row.piezasTotal / row.piezasProgramadas) * 100)
+                            : 0;
+                          if (percentage >= 95) return '#4caf50'; // green
+                          if (percentage >= 85) return '#ffeb3b'; // yellow
+                          return '#f44336'; // red
+                        })()
+                      }}
+                    >
+                      {row.piezasProgramadas > 0 
+                        ? `${Math.round((row.piezasTotal / row.piezasProgramadas) * 100)}%`
+                        : '0%'}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
