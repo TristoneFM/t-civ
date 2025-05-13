@@ -227,26 +227,27 @@ export default function GraficasPage() {
                       }
                     }}
                   >
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.autoclave}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.mandriles}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.autoclave}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.ciclosTMES}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.mandriles}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.piezasProgramadas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.piezasBuenas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.piezasMalas}</TableCell>
+                    <TableCell sx={{ fontSize: '2.3rem', py: 3, textAlign: 'center', fontWeight: 'bold' }}>{row.piezasTotal}</TableCell>
                     <TableCell 
                       sx={{ 
                         fontSize: '2.3rem', 
                         py: 5, 
                         textAlign: 'center',
-                        color: 'white',                
+                        color: 'black',  
+                        fontWeight: 'bold',              
                         bgcolor: (() => {
                           const percentage = row.piezasProgramadas > 0 
                             ? Math.round((row.piezasTotal / row.piezasProgramadas) * 100)
                             : 0;
                           if (percentage >= 95) return '#4caf50'; // green
                           if (percentage >= 85) return '#ffeb3b'; // yellow
-                          if (percentage == 0) return '#808080'; //gray
+                          if (percentage == 0) return '#b6b8b7'; //gray
                           return '#f44336'; // red
                         })()
                       }}
