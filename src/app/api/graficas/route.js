@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import { query } from '@/lib/mysql';
 import Current from '@/app/models/Current';
+import Final from '@/app/models/Final';
 
 export async function GET(request) {
   try {
@@ -17,14 +18,30 @@ export async function GET(request) {
 
     await connectDB();
 
+    const todayMysql = new Date().toISOString().split('T')[0];
     // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Get all current documents for autoclaves
     const currentDocs = await Current.find({
       stationName: { $regex: /autoclave/i },
       plant_code: "5210"
     }).select('stationName quantity mandrelConfig');
+
+    // Get all finals documents for today
+    const shiftNumber = shift === 'A' ? 1 : 2;
+    const finalsDocs = await Final.find({
+      stationName: { $regex: /autoclave/i },
+      plant_code: "5210",
+      shift: shiftNumber,
+      startTime: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    }).select('stationName quantity');
 
     // Get all captures for today and current shift
     const captures = await query(
@@ -36,12 +53,19 @@ export async function GET(request) {
       WHERE DATE(fecha_hora) = ? 
       AND shift = ?
       GROUP BY station_name`,
-      [today, shift],
+      [todayMysql, shift],
       't-civ'
     );
 
     // Format the data
     const formattedData = currentDocs.map(doc => {
+      // Find matching finals documents for this autoclave
+      const matchingFinals = finalsDocs.filter(f => f.stationName === doc.stationName);
+      const finalsQuantity = matchingFinals.reduce((sum, f) => sum + (f.quantity || 0), 0);
+      
+      // Combine current quantity with finals quantity
+      const totalQuantity = (doc.quantity || 0) + finalsQuantity;
+
       // Convert MongoDB document to plain object if needed
       const mandrelConfigArray = Array.isArray(doc.mandrelConfig) 
         ? doc.mandrelConfig.map(config => config.toObject ? config.toObject() : config)
@@ -52,7 +76,7 @@ export async function GET(request) {
         return sum + quantity;
       }, 0);
       
-      const ciclosTMES = doc.quantity || 0;
+      const ciclosTMES = totalQuantity;
       let piezasProgramadas = (mandriles/2) * ciclosTMES;
       piezasProgramadas = Math.floor(piezasProgramadas);
 
