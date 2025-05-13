@@ -90,7 +90,9 @@ export default function GraficasPage() {
             />
           </Box>
           <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="600" fontSize="3rem" color="primary" mb={5}>
-            T-CIV Cumplimiento de Programación - TURNO {shift}
+            Cumplimiento de Programación
+            <br />
+            TURNO {shift}
           </Typography>
           
           <TableContainer>
@@ -102,7 +104,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
@@ -114,19 +116,19 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
                   >
-                    Ciclos T-MES
+                    Ciclos
                   </TableCell>
                   <TableCell 
                     sx={{ 
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
@@ -138,7 +140,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
@@ -152,7 +154,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
@@ -164,7 +166,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.main,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 2,
                       textAlign: 'center'
                     }}
@@ -182,7 +184,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 1.5,
                       textAlign: 'center'
                     }}
@@ -194,7 +196,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 1.5,
                       textAlign: 'center'
                     }}
@@ -206,7 +208,7 @@ export default function GraficasPage() {
                       fontWeight: 'bold',
                       bgcolor: theme.palette.primary.light,
                       color: 'white',
-                      fontSize: '2.5rem',
+                      fontSize: '1.5rem',
                       py: 1.5,
                       textAlign: 'center'
                     }}
@@ -225,16 +227,16 @@ export default function GraficasPage() {
                       }
                     }}
                   >
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.autoclave}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.mandriles}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
-                    <TableCell sx={{ fontSize: '2.5rem', py: 2, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.autoclave}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.ciclosTMES}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.mandriles}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.piezasProgramadas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.piezasBuenas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.piezasMalas}</TableCell>
+                    <TableCell sx={{ fontSize: '1.5rem', py: 2, textAlign: 'center' }}>{row.piezasTotal}</TableCell>
                     <TableCell 
                       sx={{ 
-                        fontSize: '2.5rem', 
+                        fontSize: '1.5rem', 
                         py: 2, 
                         textAlign: 'center',
                         color: 'white',                
