@@ -783,7 +783,7 @@ export default function CapturePage() {
                     sx={{
                       height: 70,
                       minWidth: 200,
-                      border: `3px solid ${theme.palette.primary.main}`,
+                      border: `3px  ${theme.palette.primary.main}`,
                       borderRadius: 2,
                       display: 'flex',
                       alignItems: 'center',
@@ -791,7 +791,7 @@ export default function CapturePage() {
                       cursor: 'pointer',
 
                       bgcolor: selectedMandrel?.mandrel === mandrel.mandrel 
-                        ? '#808080'
+                        ? 'success.main'
                         : theme.palette.primary.light,
                       '&:hover': {
                         bgcolor: theme.palette.primary.dark,
