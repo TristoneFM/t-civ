@@ -46,10 +46,10 @@ export default function GraficasPage() {
       fetchData();
       
       // Set up polling every 10 seconds
-      //const intervalId = setInterval(fetchData, 10000);
+      const intervalId = setInterval(fetchData, 10000);
       
       // Cleanup interval on component unmount
-      //return () => clearInterval(intervalId);
+      return () => clearInterval(intervalId);
     }
   }, [shift]);
 
