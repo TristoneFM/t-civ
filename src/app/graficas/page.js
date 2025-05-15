@@ -30,12 +30,14 @@ export default function GraficasPage() {
       try {
         const response = await fetch(`/api/graficas?shift=${shift}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          //throw new Error('Failed to fetch data');
+          console.log('Failed to fetch data');
         }
         const result = await response.json();
         setData(result);
       } catch (err) {
-        setError(err.message);
+        //setError(err.message);
+        console.log('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
