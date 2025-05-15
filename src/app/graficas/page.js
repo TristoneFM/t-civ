@@ -32,9 +32,10 @@ export default function GraficasPage() {
         if (!response.ok) {
           //throw new Error('Failed to fetch data');
           console.log('Failed to fetch data');
+        }else{
+          const result = await response.json();
+          setData(result);
         }
-        const result = await response.json();
-        setData(result);
       } catch (err) {
         //setError(err.message);
         console.log('Error fetching data:', err);
