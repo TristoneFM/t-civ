@@ -29,6 +29,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '@/app/context/AuthContext';
+import JsBarcode from 'jsbarcode';
 
 const DEFECT_OPTIONS = [
   { id: 1, name: 'Ampollas' },
@@ -304,7 +305,6 @@ export default function CapturePage() {
   };
 
   const handlePrintLabel = () => {
-    const inspector = 'Eduardo'; // You can replace this with dynamic data if needed
     const now = new Date();
     const pad = (n) => n.toString().padStart(2, '0');
     const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
@@ -312,76 +312,103 @@ export default function CapturePage() {
     const client = clientName || '';
     const mandrel = selectedMandrel?.mandrel || '';
     const station = stationName || '';
+
     const labelHTML = `
       <html>
       <head>
         <title>Etiqueta</title>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
         <style>
           body { margin: 0; padding: 0; }
           .label-container {
-            width: 260px;
-            border: 1px solid #2196f3;
-            padding: 12px 8px;
+            width: 380px;
+            border: 3px solid #2196f3;
+            padding: 22px 18px;
             font-family: Arial, sans-serif;
-            margin: 24px auto;
+            margin: 28px auto;
           }
           .logo {
             display: flex;
             justify-content: center;
-            margin-bottom: 4px;
+            margin-bottom: 18px;
+          }
+          .logo img {
+            height: 160px;
+            width: auto;
+            object-fit: contain;
+          }
+          .station-name {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 18px;
+            font-weight: 500;
           }
           .main-sap {
-            font-size: 2rem;
+            font-size: 2.8rem;
             font-weight: bold;
             text-align: center;
-            margin: 0;
+            margin: 0 0 18px 0;
             color: #222;
           }
           .client {
-            font-size: 1rem;
+            font-size: 1.4rem;
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 22px;
             color: #222;
           }
           .section {
-            font-size: 0.95rem;
-            margin-bottom: 4px;
+            font-size: 1.3rem;
+            margin-bottom: 18px;
             text-align: left;
+            line-height: 1.5;
           }
           .barcode {
-            margin: 8px 0 4px 0;
+            margin: 18px 0;
             text-align: center;
           }
-          .barcode img {
-            width: 180px;
-            height: 40px;
+          .barcode svg {
+            width: 320px;
+            height: 90px;
           }
           .footer {
-            font-size: 0.85rem;
-            margin-top: 8px;
+            font-size: 1.2rem;
+            margin-top: 22px;
             text-align: left;
+            line-height: 1.5;
           }
         </style>
       </head>
       <body>
         <div class="label-container">
           <div class="logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Tristone_Flowtech_Group_logo.png" alt="Logo" style="height:32px;"/>
+            <img src="/tristone.png" alt="Logo"/>
           </div>
-          <div style="text-align:center;font-size:1.1rem;">${station}</div>
+          <div class="station-name">${station}</div>
           <div class="main-sap">${mandrel}</div>
           <div class="client">Cliente: <b>${client}</b></div>
-          <div class="section">Estampado: 1<br/>Área de Muesca:<br/>Prueba de Fuga:</div>
-          <div class="section">SAP: ${sap}<br/>SAP: 5V${sap}</div>
+          <div class="section">Estampado: <br/>Área de Muesca:<br/>Prueba de Fuga:</div>
+          <div class="section">SAP: ${sap}<br/>SAP: ${sap}</div>
           <div class="barcode">
-            <img src="https://barcode.tec-it.com/barcode.ashx?data=${sap}&code=Code128&translate-esc=false" alt="barcode" />
+            <svg id="barcode"></svg>
           </div>
           <div class="footer">
-            Inspector: ${inspector}<br/>
+            Inspector: ${employeeName}<br/>
             Fecha/Hora: ${dateStr}
           </div>
         </div>
-        <script>window.onload = function() { window.print(); };</script>
+        <script>
+          window.onload = function() {
+            JsBarcode("#barcode", "P${sap}", {
+              format: "CODE128",
+              width: 3,
+              height: 90,
+              displayValue: true,
+              fontSize: 20,
+              margin: 0
+            });
+            window.print();
+          };
+        </script>
       </body>
       </html>
     `;
@@ -603,7 +630,7 @@ export default function CapturePage() {
                   >
                     Guardar
                   </Button>
-                  {/* Print button temporarily disabled
+                  {/* Print button temporarily disabled */}
                   <IconButton 
                     onClick={handlePrintToggle}
                     sx={{ 
@@ -615,7 +642,7 @@ export default function CapturePage() {
                   >
                     <PrintIcon fontSize="large" />
                   </IconButton>
-                  */}
+                  
                 </Box>
               </Paper>
             </Grid>

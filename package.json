@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "jsbarcode": "^3.11.6",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.2",
     "mysql2": "^3.14.1",
