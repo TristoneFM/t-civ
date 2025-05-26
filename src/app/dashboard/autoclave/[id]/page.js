@@ -30,6 +30,9 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import { useAuth } from '@/app/context/AuthContext';
 import JsBarcode from 'jsbarcode';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const DEFECT_OPTIONS = [
   { id: 1, name: 'Ampollas' },
@@ -90,6 +93,13 @@ export default function CapturePage() {
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const { employeeName, employeeId, currentShift } = useAuth();
+  const [scrapOpen, setScrapOpen] = useState(false);
+  const [scrapStart, setScrapStart] = useState(null);
+  const [scrapEnd, setScrapEnd] = useState(null);
+  const [scrapLoading, setScrapLoading] = useState(false);
+  const [scrapResult, setScrapResult] = useState(null);
+  const [scrapError, setScrapError] = useState('');
+
   useEffect(() => {
     const fetchStation = async () => {
       try {
@@ -418,6 +428,165 @@ export default function CapturePage() {
     printWindow.document.close();
   };
 
+  const handleOpenScrap = () => {
+    setScrapOpen(true);
+    setScrapResult(null);
+    setScrapError('');
+    const now = new Date();
+    setScrapStart(now);
+    setScrapEnd(now);
+  };
+
+  const handleCloseScrap = () => setScrapOpen(false);
+
+  const handleScrapSearch = async () => {
+    if (!scrapStart || !scrapEnd) {
+      setScrapError('Selecciona ambas fechas.');
+      return;
+    }
+    setScrapLoading(true);
+    setScrapError('');
+    setScrapResult(null);
+    try {
+      const res = await fetch(`/api/captures/scrap?station=${encodeURIComponent(stationName)}&start=${encodeURIComponent(scrapStart.toISOString())}&end=${encodeURIComponent(scrapEnd.toISOString())}`);
+      const data = await res.json();
+      console.log('Scrap API result:', data);
+      if (res.ok) {
+        setScrapResult(data);
+      } else {
+        setScrapError(data.error || 'Error al buscar el scrap.');
+      }
+    } catch (e) {
+      setScrapError('Error de red.');
+    } finally {
+      setScrapLoading(false);
+    }
+  };
+
+  const handlePrintScrap = () => {
+    if (!scrapResult) return;
+    const { totalMalas, porMandril } = scrapResult;
+    const start = scrapStart ? new Date(scrapStart) : null;
+    const end = scrapEnd ? new Date(scrapEnd) : null;
+    const format = d => d ? `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}` : '';
+    const labelHTML = `
+      <html>
+      <head>
+        <title>Reporte Scrap</title>
+        <style>
+          body { margin: 0; padding: 0; }
+          .scrap-container {
+            width: 420px;
+            border: 2.5px solid #2196f3;
+            padding: 28px 20px;
+            font-family: Arial, sans-serif;
+            margin: 32px auto;
+          }
+          .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 22px;
+          }
+          .logo img {
+            height: 96px;
+            width: auto;
+            object-fit: contain;
+          }
+          .scrap-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+          }
+          .scrap-section {
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+          }
+          .scrap-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+          }
+          .scrap-table th, .scrap-table td {
+            border: 1.5px solid #bbb;
+            padding: 7px 12px;
+            font-size: 1.3rem;
+            text-align: left;
+          }
+          .scrap-table th {
+            background: #e3f2fd;
+            font-weight: bold;
+          }
+          .scrap-total {
+            font-size: 2.6rem;
+            color: #d32f2f;
+            text-align: center;
+            font-weight: bold;
+            margin: 24px 0;
+          }
+          .sign-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+          }
+          .sign-box {
+            width: 48%;
+            text-align: center;
+          }
+          .sign-line {
+            border-bottom: 2px solid #222;
+            margin-bottom: 8px;
+            height: 40px;
+          }
+          .sign-label {
+            font-size: 1.2rem;
+            color: #222;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="scrap-container">
+          <div class="logo">
+            <img src="/tristone.png" alt="Logo" />
+          </div>
+          <div class="scrap-title">Reporte de Scrap</div>
+          <div class="scrap-section"><b>Estación:</b> ${stationName}</div>
+          <div class="scrap-section"><b>Desde:</b> ${format(start)}</div>
+          <div class="scrap-section"><b>Hasta:</b> ${format(end)}</div>
+          <div class="scrap-section"><b>Por Mandril:</b></div>
+          <table class="scrap-table">
+            <thead>
+              <tr><th>Mandril</th><th>Cantidad</th></tr>
+            </thead>
+            <tbody>
+              ${(porMandril && porMandril.length > 0)
+                ? porMandril.map(row => `<tr><td>${row.mandrel}</td><td><b>${Number(row.malas)}</b></td></tr>`).join('')
+                : '<tr><td colspan="2">Sin datos</td></tr>'}
+            </tbody>
+          </table>
+          <div class="scrap-section"><b>Total Piezas Malas:</b></div>
+          <div class="scrap-total">${Number(totalMalas)}</div>
+          <div class="sign-section">
+            <div class="sign-box">
+              <div class="sign-line"></div>
+              <div class="sign-label">F. Inspector</div>
+            </div>
+            <div class="sign-box">
+              <div class="sign-line"></div>
+              <div class="sign-label">F. Materialista</div>
+            </div>
+          </div>
+        </div>
+        <script>window.onload = function() { window.print(); };</script>
+      </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.open();
+    printWindow.document.write(labelHTML);
+    printWindow.document.close();
+  };
+
   if (loading) {
     return (
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
@@ -460,6 +629,14 @@ export default function CapturePage() {
             startIcon={<AddCircleOutlineIcon sx={{ fontSize: 28 }} />}
           >
             Selecionar Mandrill
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleOpenScrap}
+            sx={{ fontWeight: 600, fontSize: '1.2rem', mt: 1 }}
+          >
+            Scrap
           </Button>
         </Box>
 
@@ -978,6 +1155,52 @@ export default function CapturePage() {
               sx={{ minWidth: '150px' }}
             >
               Cerrar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Scrap Modal */}
+        <Dialog open={scrapOpen} onClose={handleCloseScrap} maxWidth="xs" fullWidth>
+          <DialogTitle>Reporte de Scrap</DialogTitle>
+          <DialogContent>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DateTimePicker
+                label="Hora inicio"
+                value={scrapStart}
+                onChange={setScrapStart}
+                renderInput={(params) => <TextField {...params} margin="normal" fullWidth style={{mb:'10px'}} />}
+              />
+              <DateTimePicker
+                label="Hora fin"
+                value={scrapEnd}
+                onChange={setScrapEnd}
+                renderInput={(params) => <TextField {...params} margin="normal" fullWidth style={{mb:'10px'}} />}
+              />
+            </LocalizationProvider>
+            {scrapError && <Typography color="error" sx={{ mt: 1 }}>{scrapError}</Typography>}
+            {scrapResult && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Por Mandril:</Typography>
+                <Box sx={{ mb: 2 }}>
+                  {scrapResult.porMandril && scrapResult.porMandril.length > 0 ? (
+                    scrapResult.porMandril.map((row, idx) => (
+                      <Typography key={idx} sx={{ fontSize: '1.1rem' }}>
+                        {row.mandrel} - <b>{Number(row.malas)}</b>
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography color="text.secondary">Sin datos</Typography>
+                  )}
+                </Box>
+                <Typography variant="h6">Total piezas malas: <b style={{color:'#d32f2f'}}>{Number(scrapResult.totalMalas)}</b></Typography>
+                <Button onClick={handlePrintScrap} variant="contained" color="primary" sx={{ mt: 2 }}>Imprimir</Button>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseScrap}>Cerrar</Button>
+            <Button onClick={handleScrapSearch} disabled={scrapLoading} variant="contained" color="error">
+              {scrapLoading ? 'Buscando...' : 'Buscar'}
             </Button>
           </DialogActions>
         </Dialog>
