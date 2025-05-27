@@ -69,6 +69,7 @@ export function AuthProvider({ children }) {
     // Check for employee ID in cookies on mount
     const storedEmployeeId = Cookies.get('employeeId');
     const storedPermissions = Cookies.get('permissions');
+    const storedEmployeeName = Cookies.get('employeeName');
     
     if (storedEmployeeId) {
       setEmployeeId(storedEmployeeId);
@@ -80,6 +81,9 @@ export function AuthProvider({ children }) {
           console.error('Error parsing permissions:', e);
           setPermissions([]);
         }
+      }
+      if (storedEmployeeName) {
+        setEmployeeName(storedEmployeeName);
       }
     }
     setIsLoading(false);
@@ -180,7 +184,7 @@ export function AuthProvider({ children }) {
       // If user can't access the current route, redirect to appropriate page
       if (!canAccessRoute(currentPath)) {
         if (hasPermission('inspector')) {
-          router.push('/login'); // Redirect inspectors to graficas
+          router.push('/login'); // Redirect inspectors to login
         } else {
           router.push('/dashboard'); // Redirect others to dashboard
         }
