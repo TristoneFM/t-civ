@@ -3,7 +3,19 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const AuthContext = createContext();
+const defaultContext = {
+  employeeId: null,
+  permissions: [],
+  login: async () => ({ success: false, error: 'Not initialized' }),
+  logout: () => {},
+  isAuthenticated: false,
+  loginError: '',
+  hasPermission: () => false,
+  employeeName: '',
+  currentShift: null
+};
+
+const AuthContext = createContext(defaultContext);
 
 export function AuthProvider({ children }) {
   const [employeeId, setEmployeeId] = useState(null);
@@ -41,6 +53,9 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Check for employee ID in localStorage on mount
     const storedEmployeeId = localStorage.getItem('employeeId');
     const storedPermissions = localStorage.getItem('permissions');
@@ -48,7 +63,13 @@ export function AuthProvider({ children }) {
     if (storedEmployeeId) {
       setEmployeeId(storedEmployeeId);
       if (storedPermissions) {
-        setPermissions(JSON.parse(storedPermissions));
+        try {
+          const parsedPermissions = JSON.parse(storedPermissions);
+          setPermissions(Array.isArray(parsedPermissions) ? parsedPermissions : []);
+        } catch (e) {
+          console.error('Error parsing permissions:', e);
+          setPermissions([]);
+        }
       }
     }
     setIsLoading(false);
@@ -81,9 +102,11 @@ export function AuthProvider({ children }) {
       }
       
       // Store employee ID and permissions
-      localStorage.setItem('employeeId', data.employeeId);
-      localStorage.setItem('permissions', JSON.stringify(data.permissions));
-      localStorage.setItem('employeeName', data.employeeName);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('employeeId', data.employeeId);
+        localStorage.setItem('permissions', JSON.stringify(data.permissions));
+        localStorage.setItem('employeeName', data.employeeName);
+      }
       
       setEmployeeId(data.employeeId);
       setPermissions(data.permissions);
@@ -98,9 +121,11 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('employeeId');
-    localStorage.removeItem('permissions');
-    localStorage.removeItem('employeeName');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('employeeId');
+      localStorage.removeItem('permissions');
+      localStorage.removeItem('employeeName');
+    }
     setEmployeeId(null);
     setPermissions([]);
     setEmployeeName('');
@@ -116,6 +141,7 @@ export function AuthProvider({ children }) {
   // Redirect to login if not authenticated and not already on login page or graficas page
   useEffect(() => {
     if (!isLoading && !isAuthenticated && 
+        typeof window !== 'undefined' &&
         window.location.pathname !== '/login' && 
         !window.location.pathname.startsWith('/graficas')) {
       router.push('/login');
@@ -126,23 +152,29 @@ export function AuthProvider({ children }) {
     return null; // or a loading spinner
   }
 
+  const value = {
+    employeeId,
+    permissions,
+    login,
+    logout,
+    isAuthenticated,
+    loginError,
+    hasPermission,
+    employeeName,
+    currentShift
+  };
+
   return (
-    <AuthContext.Provider value={{ 
-      employeeId, 
-      permissions,
-      login, 
-      logout, 
-      isAuthenticated,
-      loginError,
-      hasPermission,
-      employeeName,
-      currentShift
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 } 
