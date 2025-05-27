@@ -106,7 +106,10 @@ export function AuthProvider({ children }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ employeeId: id }),
+        body: JSON.stringify({ 
+          employeeId: id,
+          isAdmin: isAdmin 
+        }),
       });
       
       const data = await response.json();
@@ -115,21 +118,22 @@ export function AuthProvider({ children }) {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Add inspector permission if not admin
-      const userPermissions = isAdmin ? data.permissions : [...data.permissions, 'inspector'];
-      
       // Store employee ID and permissions in cookies
       if (typeof window !== 'undefined') {
         Cookies.set('employeeId', data.employeeId, { expires: 1 }); // Expires in 1 day
-        Cookies.set('permissions', JSON.stringify(userPermissions), { expires: 1 });
+        Cookies.set('permissions', JSON.stringify(data.permissions), { expires: 1 });
         Cookies.set('employeeName', data.employeeName, { expires: 1 });
       }
       
       setEmployeeId(data.employeeId);
-      setPermissions(userPermissions);
+      setPermissions(data.permissions);
       setEmployeeName(data.employeeName);
       
-      return { success: true };
+      return { 
+        success: true,
+        permissions: data.permissions,
+        employeeName: data.employeeName
+      };
     } catch (error) {
       console.error('Login error:', error);
       setLoginError(error.message || 'Error during login');

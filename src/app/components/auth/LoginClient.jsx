@@ -61,16 +61,10 @@ export default function LoginClient() {
         setError('Por favor ingrese la contraseña de admin');
         return;
       }
-      setIsLoading(true);
-      setError('');
-      try {
-        // Directly redirect to dashboard for admin login
-        router.push('/dashboard');
-      } catch (error) {
-        setIsLoading(false);
-        console.log(error.message || 'Error de red');
+      if (adminPassword !== adminUser) {
+        setError('Credenciales de admin inválidas');
+        return;
       }
-      return;
     } else {
       if (!employeeId.trim()) {
         setError('Por favor ingrese su ID de empleado');
@@ -82,18 +76,23 @@ export default function LoginClient() {
     let result;
     try {
       if (isAdmin) {
-        result = await login(adminUser.trim(), true, adminPassword);
+        result = await login(adminUser.trim(), true);
       } else {
         let employeeIdFormatted = employeeId;
-        if (employeeId.startsWith('120')) {
-          employeeIdFormatted = employeeId.slice(3, -1);
-        } else if (employeeId.startsWith('12') && employeeId[2] !== '0') {
-          employeeIdFormatted = employeeId.slice(2, -1);
+        employeeIdFormatted = employeeIdFormatted.replace(/^0+/, '');
+        if (employeeIdFormatted.startsWith('12')) {
+          employeeIdFormatted = employeeIdFormatted.slice(2);
         }
-        result = await login(employeeIdFormatted.trim(), false, '');
+        result = await login(employeeIdFormatted.trim(), false);
       }
+      console.log(result);
       if (result.success) {
-        router.push('/dashboard/select-autoclave');
+       
+        if (result.permissions && result.permissions.includes('admin')) {
+          router.push('/dashboard');
+        } else {
+          router.push('/dashboard/select-autoclave');
+        }
       } else {
         setEmployeeId('');
         setAdminUser('');

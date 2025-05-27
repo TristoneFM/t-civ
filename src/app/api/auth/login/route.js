@@ -3,7 +3,7 @@ import { query } from '@/lib/mysql';
 
 export async function POST(request) {
   try {
-    const { employeeId } = await request.json();
+    const { employeeId, isAdmin } = await request.json();
 
     if (!employeeId) {
       return NextResponse.json(
@@ -14,7 +14,7 @@ export async function POST(request) {
 
     // Query the database to check if the employee exists and get their access level
     const employees = await query(
-      `SELECT emp_num, emp_name 
+      `SELECT emp_num, emp_name, emp_sup, emp_area 
        FROM b10.empleados 
        WHERE emp_num = ?`,
       [employeeId],
@@ -29,20 +29,32 @@ export async function POST(request) {
     }
 
     const employee = employees[0];
-    const accessLevel = employee.acc_inventario;
+    const supervisor = employee.emp_sup;
+    const area = employee.emp_area;
+    
 
-    // Determine access permissions based on acc_inventario value
+    // Determine access permissions based on area and supervisor status
     let permissions = [];
-    if (accessLevel === 1) {
-      permissions = ['capture'];
-    } else if (accessLevel === 2 || accessLevel === 3) {
-      permissions = ['capture', 'audit'];
+    
+    // If it's an admin login attempt
+    if (isAdmin) {
+      // Check if the employee is a supervisor (emp_sup = 1)
+      if (supervisor === 1) {
+        permissions.push('admin');
+      } else {
+        return NextResponse.json(
+          { error: 'No tiene permisos de supervisor' },
+          { status: 401 }
+        );
+      }
+    } else {
+      // Regular inspector login - allow access if they are in TCIV area
+      permissions.push('inspector');
     }
 
     return NextResponse.json({
       success: true,
       employeeId: employee.emp_num,
-      accessLevel,
       permissions,
       employeeName: employee.emp_name
     });
@@ -50,7 +62,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Error during login' },
+      { error: 'Error durante el inicio de sesión' },
       { status: 500 }
     );
   }
