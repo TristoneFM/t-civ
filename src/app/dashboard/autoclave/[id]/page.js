@@ -89,6 +89,7 @@ export default function CapturePage() {
       try {
         const res = await fetch('/api/defects');
         const data = await res.json();
+        console.log(data);
         setDefectOptions(data);
       } catch (err) {
         setDefectOptions([]);
@@ -178,19 +179,19 @@ export default function CapturePage() {
 
   const handleDefectClick = (defect) => {
     setSelectedDefects((prev) => {
-      const found = prev.find((d) => d.name === defect);
+      const found = prev.find((d) => d.id === defect.id);
       if (found) {
-        return prev.map((d) => d.name === defect ? { ...d, count: d.count + 1 } : d);
+        return prev.map((d) => d.id === defect.id ? { ...d, count: d.count + 1 } : d);
       } else {
-        return [...prev, { name: defect, count: 1 }];
+        return [...prev, { id: defect.id, name: defect.name, count: 1 }];
       }
     });
     setBadPieces((prev) => (prev === '' ? '1' : String(Number(prev) + 1)));
   };
 
-  const handleDefectDelete = (defectName) => {
-    setSelectedDefects((prev) => prev.filter((d) => d.name !== defectName));
-    const defect = selectedDefects.find((d) => d.name === defectName);
+  const handleDefectDelete = (defectId) => {
+    setSelectedDefects((prev) => prev.filter((d) => d.id !== defectId));
+    const defect = selectedDefects.find((d) => d.id === defectId);
     if (defect) {
       setBadPieces((prev) => {
         const newVal = Number(prev) - defect.count;
@@ -242,7 +243,7 @@ export default function CapturePage() {
       const pad = (n) => n.toString().padStart(2, '0');
       const fecha_hora = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       const defects = selectedDefects.map(d => {
-        const defectObj = DEFECT_OPTIONS.find(opt => opt.name === d.name);
+        const defectObj = DEFECT_OPTIONS.find(opt => opt.id === d.id);
         return defectObj ? { defect_id: defectObj.defect_code, defect_count: d.count } : null;
       }).filter(Boolean);
       const payload = {
@@ -861,14 +862,14 @@ export default function CapturePage() {
             </Typography>
             <Grid container spacing={1}>
               {DEFECT_OPTIONS.map((defect, idx) => {
-                const found = selectedDefects.find((d) => d.name === defect.name);
-                const count = found ? found.count : 0;
+                const selectedDefect = selectedDefects.find((d) => d.id === defect.id);
+                const count = selectedDefect ? selectedDefect.count : 0;
                 return (
-                  <Grid item xs={6} sm={4} md={3} lg={2} key={idx}>
+                  <Grid item xs={6} sm={4} md={3} lg={2} key={defect.id}>
                     <Box sx={{ position: 'relative', width: '100%' }}>
                       <Button
                         variant="contained"
-                        color={count > 0 ? 'error' : 'primary'}
+                        color={selectedDefect ? 'error' : 'primary'}
                         fullWidth
                         sx={{
                           width: 250,
@@ -883,11 +884,18 @@ export default function CapturePage() {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           minWidth: 280,
-                          maxWidth: 280
+                          maxWidth: 280,
+                          flexDirection: 'column',
+                          gap: 0.5
                         }}
-                        onClick={() => handleDefectClick(defect.name)}
+                        onClick={() => handleDefectClick(defect)}
                       >
-                        {count > 0 ? `(${count}) ` : ''}{defect.name}
+                        <Typography sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+                          {count > 0 ? `(${count}) ` : ''}{defect.name}
+                        </Typography>
+                        <Typography sx={{ fontSize: '1rem', opacity: 0.9 }}>
+                          {defect.description}
+                        </Typography>
                       </Button>
                       {count > 0 && (
                         <IconButton
@@ -905,7 +913,7 @@ export default function CapturePage() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDefectDelete(defect.name);
+                            handleDefectDelete(defect.id);
                           }}
                         >
                           <CloseIcon fontSize="small" />
