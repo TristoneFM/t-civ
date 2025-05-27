@@ -3,6 +3,7 @@
 import { Box, Button, Container, Grid, Paper, Typography, useTheme } from '@mui/material';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AutoclaveIcon from '@mui/icons-material/Factory';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import Link from 'next/link';
 
 export default function Dashboard() {
@@ -32,11 +33,13 @@ export default function Dashboard() {
               <Paper
                 elevation={3}
                 sx={{
-                  p: 4,
-                  height: '100%',
+                  p: 2,
+                  width: 220,
+                  height: 220,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
@@ -74,11 +77,13 @@ export default function Dashboard() {
               <Paper
                 elevation={3}
                 sx={{
-                  p: 4,
-                  height: '100%',
+                  p: 2,
+                  width: 220,
+                  height: 220,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
@@ -106,6 +111,50 @@ export default function Dashboard() {
                 </Typography>
                 <Typography color="text.secondary" align="center">
                   Visualización y generación de reportes
+                </Typography>
+              </Paper>
+            </Link>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <Link href="/dashboard/defectos" style={{ textDecoration: 'none' }}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 2,
+                  width: 220,
+                  height: 220,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8]
+                  }
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.error.main,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 3
+                  }}
+                >
+                  <BugReportIcon sx={{ fontSize: 40, color: 'white' }} />
+                </Box>
+                <Typography variant="h5" component="h2" gutterBottom fontWeight="600">
+                  Defectos
+                </Typography>
+                <Typography color="text.secondary" align="center">
+                  Gestión de defectos
                 </Typography>
               </Paper>
             </Link>

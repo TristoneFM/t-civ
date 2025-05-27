@@ -14,12 +14,14 @@ import PersonIcon from '@mui/icons-material/Person';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import TablePagination from '@mui/material/TablePagination';
 
 export default function ReportesPage() {
   const theme = useTheme();
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
     desde: '',
     hasta: '',
@@ -49,6 +51,13 @@ export default function ReportesPage() {
   const [defectSummary, setDefectSummary] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [viewMode, setViewMode] = useState('main'); // 'main' or 'defects'
+
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'defects') {
+      setViewMode('defects');
+    }
+  }, [searchParams]);
 
   const handleChange = (field) => (event) => {
     setFilters({ ...filters, [field]: event.target.value });
