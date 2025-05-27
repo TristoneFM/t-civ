@@ -609,6 +609,7 @@ export default function ReportesPage() {
                       <TableCell>Código</TableCell>
                       <TableCell>Mandril</TableCell>
                       <TableCell>SAP Extrusión</TableCell>
+                      <TableCell>Turno</TableCell>
                       <TableCell align="right">Total Malas</TableCell>
                     </TableRow>
                   </TableHead>
@@ -628,6 +629,7 @@ export default function ReportesPage() {
                           <TableCell>{row.defect_id}</TableCell>
                           <TableCell>{row.mandrel}</TableCell>
                           <TableCell>{row.sap_number_extrusion}</TableCell>
+                          <TableCell>{row.shift}</TableCell>
                           <TableCell align="right">{row.total_malas}</TableCell>
                         </TableRow>
                       ))
