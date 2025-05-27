@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container, Typography, Paper, Grid, Button, TextField, MenuItem, Select, InputLabel, FormControl, InputAdornment, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Container, Typography, Paper, Grid, Button, TextField, MenuItem, Select, InputLabel, FormControl, InputAdornment, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -12,8 +12,11 @@ import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturi
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import CancelIcon from '@mui/icons-material/Cancel';
+import SearchIcon from '@mui/icons-material/Search';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import TablePagination from '@mui/material/TablePagination';
 
 export default function ReportesPage() {
   const theme = useTheme();
@@ -40,6 +43,12 @@ export default function ReportesPage() {
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [defectSummary, setDefectSummary] = useState([]);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [viewMode, setViewMode] = useState('main'); // 'main' or 'defects'
 
   const handleChange = (field) => (event) => {
     setFilters({ ...filters, [field]: event.target.value });
@@ -51,6 +60,7 @@ export default function ReportesPage() {
       return;
     }
     setLoading(true);
+    setLoadingSummary(true);
     try {
       const start = filters.desde + ' 00:00:00';
       const end = filters.hasta + ' 23:59:59';
@@ -62,11 +72,125 @@ export default function ReportesPage() {
         setRows([]);
         toast.error(data.error || 'Error al buscar reportes');
       }
+      // Fetch defect summary
+      const resSummary = await fetch(`/api/captures/defect-summary?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+      const dataSummary = await resSummary.json();
+      if (Array.isArray(dataSummary)) {
+        setDefectSummary(dataSummary);
+      } else {
+        setDefectSummary([]);
+      }
     } catch (err) {
       setRows([]);
+      setDefectSummary([]);
       toast.error('Error de red');
     } finally {
       setLoading(false);
+      setLoadingSummary(false);
+    }
+  };
+
+  // Filtering logic for main table
+  const filteredRows = rows.filter(row => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return (
+      (row.inspector || '').toLowerCase().includes(s) ||
+      (row.station_name || '').toLowerCase().includes(s) ||
+      (row.client || '').toLowerCase().includes(s) ||
+      (row.mandrel || '').toLowerCase().includes(s) ||
+      (row.sap_number || '').toLowerCase().includes(s) ||
+      (row.sap_number_extrusion || '').toLowerCase().includes(s) ||
+      (row.shift || '').toLowerCase().includes(s) ||
+      (row.fecha_hora || '').toLowerCase().includes(s)
+    );
+  });
+
+  // Filtering logic for defect summary
+  const filteredDefectSummary = defectSummary.filter(row => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return (
+      String(row.defect_name || '').toLowerCase().includes(s) ||
+      String(row.defect_id || '').toLowerCase().includes(s) ||
+      String(row.mandrel || '').toLowerCase().includes(s) ||
+      String(row.sap_number_extrusion || '').toLowerCase().includes(s)
+    );
+  });
+
+  // Pagination logic
+  const paginatedRows = filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedDefectSummary = filteredDefectSummary.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // CSV Download for main table
+  const handleDownloadCSV = () => {
+    if (viewMode === 'main' && filteredRows.length === 0) {
+      toast.error('No hay datos para descargar');
+      return;
+    }
+    if (viewMode === 'defects' && filteredDefectSummary.length === 0) {
+      toast.error('No hay datos para descargar');
+      return;
+    }
+
+    let headers = [];
+    let csvRows = [];
+
+    if (viewMode === 'main') {
+      headers = [
+        'Captura', 'Inspector', 'Autoclave', 'Cliente', 'Mandril', 'SAP Vulcanizado', 'SAP Extrusion', 'Piezas Buenas', 'Piezas Malas', 'Turno', 'Fecha'
+      ];
+      csvRows = [headers.join(',')];
+      filteredRows.forEach(row => {
+        csvRows.push([
+          row.id,
+          row.inspector,
+          row.station_name,
+          row.client,
+          row.mandrel,
+          row.sap_number,
+          row.sap_number_extrusion,
+          row.piezas_buenas,
+          row.piezas_malas,
+          row.shift,
+          row.fecha_hora
+        ].map(val => `"${val ?? ''}"`).join(','));
+      });
+    } else {
+      headers = [
+        'Defecto', 'Código', 'Mandril', 'SAP Extrusión', 'Total Malas'
+      ];
+      csvRows = [headers.join(',')];
+      filteredDefectSummary.forEach(row => {
+        csvRows.push([
+          row.defect_name,
+          row.defect_id,
+          row.mandrel,
+          row.sap_number_extrusion,
+          row.total_malas
+        ].map(val => `"${val ?? ''}"`).join(','));
+      });
+    }
+    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', encodeURI(csvContent));
+    link.setAttribute('download', `reporte_${viewMode === 'main' ? 'capturas' : 'defectos'}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleViewModeChange = (event, newMode) => {
+    if (newMode !== null) {
+      setViewMode(newMode);
     }
   };
 
@@ -79,7 +203,7 @@ export default function ReportesPage() {
       }}
     >
       <Container maxWidth={false} sx={{ px: { xs: 1, sm: 3, md: 6 } }}>
-        <Box sx={{ width: { xs: '100%', md: '75%' }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ width: '100%' }}>
           <Box sx={{ mb: 6, textAlign: 'center', position: 'relative' }}>
             <Link href="/dashboard" style={{ textDecoration: 'none', position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
               <Button
@@ -97,9 +221,7 @@ export default function ReportesPage() {
             <Typography variant="h3" component="h1" color="black" fontWeight="600" gutterBottom>
               Reportes
             </Typography>
-            <Typography variant="h6" color="black" sx={{ opacity: 0.9 }}>
-              Seleccione el tipo de reporte
-            </Typography>
+
           </Box>
 
           {/* Filter Form */}
@@ -366,51 +488,156 @@ export default function ReportesPage() {
             </Grid>
           </Paper>
 
-          {/* Results Table */}
-          <Paper elevation={2} sx={{ width: '100%', mt: 4 }}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Captura</TableCell>
-                    <TableCell>Inspector</TableCell>
-                    <TableCell>Autoclave</TableCell>
-                    <TableCell>Cliente</TableCell>
-                    <TableCell>Mandril</TableCell>
-                    <TableCell>SAP Vulcanizado</TableCell>
-                    <TableCell>SAP Extrusion</TableCell>
-                    <TableCell>Piezas Buenas</TableCell>
-                    <TableCell>Piezas Malas</TableCell>
-                    <TableCell>Turno</TableCell>
-                    <TableCell>Fecha</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.length === 0 ? (
+          {/* Filter/Search and Download */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={handleViewModeChange}
+                aria-label="view mode"
+                size="large"
+              >
+                <ToggleButton value="main" aria-label="main report">
+                  Capturas
+                </ToggleButton>
+                <ToggleButton value="defects" aria-label="defect summary">
+                  Resumen de Defectos
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+            <TextField
+              placeholder="Buscar en la tabla..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              size="small"
+              sx={{ width: 350 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="primary" />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownloadCSV}
+              sx={{ ml: 2 }}
+            >
+              Descargar CSV
+            </Button>
+          </Box>
+
+          {/* Main Results Table */}
+          {viewMode === 'main' && (
+            <Paper elevation={2} sx={{ width: '100%', mt: 4 }}>
+              <TableContainer sx={{ width: '100%' }}>
+                <Table>
+                  <TableHead>
                     <TableRow>
-                      <TableCell colSpan={9} align="center">Sin datos</TableCell>
+                      <TableCell>Captura</TableCell>
+                      <TableCell>Inspector</TableCell>
+                      <TableCell>Autoclave</TableCell>
+                      <TableCell>Cliente</TableCell>
+                      <TableCell>Mandril</TableCell>
+                      <TableCell>SAP Vulcanizado</TableCell>
+                      <TableCell>SAP Extrusion</TableCell>
+                      <TableCell>Piezas Buenas</TableCell>
+                      <TableCell>Piezas Malas</TableCell>
+                      <TableCell>Turno</TableCell>
+                      <TableCell>Fecha</TableCell>
                     </TableRow>
-                  ) : (
-                    rows.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell>{row.id}</TableCell>
-                        <TableCell>{row.inspector}</TableCell>
-                        <TableCell>{row.station_name}</TableCell>
-                        <TableCell>{row.client}</TableCell>
-                        <TableCell>{row.mandrel}</TableCell>
-                        <TableCell>{row.sap_number}</TableCell>
-                        <TableCell>{row.sap_number_extrusion}</TableCell>
-                        <TableCell>{row.piezas_buenas}</TableCell>
-                        <TableCell>{row.piezas_malas}</TableCell>
-                        <TableCell>{row.shift}</TableCell>
-                        <TableCell>{row.fecha_hora}</TableCell>
+                  </TableHead>
+                  <TableBody>
+                    {filteredRows.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={11} align="center">Sin datos</TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+                    ) : (
+                      paginatedRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>{row.id}</TableCell>
+                          <TableCell>{row.inspector}</TableCell>
+                          <TableCell>{row.station_name}</TableCell>
+                          <TableCell>{row.client}</TableCell>
+                          <TableCell>{row.mandrel}</TableCell>
+                          <TableCell>{row.sap_number}</TableCell>
+                          <TableCell>{row.sap_number_extrusion}</TableCell>
+                          <TableCell>{row.piezas_buenas}</TableCell>
+                          <TableCell>{row.piezas_malas}</TableCell>
+                          <TableCell>{row.shift}</TableCell>
+                          <TableCell>{row.fecha_hora}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component="div"
+                count={filteredRows.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                labelRowsPerPage="Filas por página"
+              />
+            </Paper>
+          )}
+
+          {/* Defect Summary Table */}
+          {viewMode === 'defects' && (
+            <Paper elevation={2} sx={{ width: '100%', mt: 4 }}>
+              <TableContainer sx={{ width: '100%' }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Defecto</TableCell>
+                      <TableCell>Código</TableCell>
+                      <TableCell>Mandril</TableCell>
+                      <TableCell>SAP Extrusión</TableCell>
+                      <TableCell align="right">Total Malas</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {loadingSummary ? (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">Cargando...</TableCell>
+                      </TableRow>
+                    ) : filteredDefectSummary.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">Sin datos</TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedDefectSummary.map((row, idx) => (
+                        <TableRow key={row.defect_id + '-' + row.mandrel + '-' + row.sap_number_extrusion + '-' + idx}>
+                          <TableCell>{row.defect_name}</TableCell>
+                          <TableCell>{row.defect_id}</TableCell>
+                          <TableCell>{row.mandrel}</TableCell>
+                          <TableCell>{row.sap_number_extrusion}</TableCell>
+                          <TableCell align="right">{row.total_malas}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component="div"
+                count={filteredDefectSummary.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                labelRowsPerPage="Filas por página"
+              />
+            </Paper>
+          )}
         </Box>
       </Container>
     </Box>
