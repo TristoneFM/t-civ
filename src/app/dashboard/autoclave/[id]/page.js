@@ -34,44 +34,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-const DEFECT_OPTIONS = [
-  { id: 1, name: 'Ampollas' },
-  { id: 2, name: 'Contaminacion' },
-  { id: 3, name: 'Cortas' },
-  { id: 4, name: 'Corte angular' },
-  { id: 5, name: 'Daño en mandril' },
-  { id: 6, name: 'Daño externo' },
-  { id: 7, name: 'Daño interno' },
-  { id: 8, name: 'ER Canal Interno' },
-  { id: 9, name: 'ER Cubierta suelta' },
-  { id: 10, name: 'ER Diametro abierto' },
-  { id: 11, name: 'ER Diametro cerrado' },
-  { id: 12, name: 'ER Doble golpe de' },
-  { id: 13, name: 'ER Encogimiento' },
-  { id: 14, name: 'ER espesor alto' },
-  { id: 15, name: 'ER espesor bajo' },
-  { id: 16, name: 'ER Grumos' },
-  { id: 17, name: 'ER Longitud corta' },
-  { id: 18, name: 'ER Longitud larga' },
-  { id: 19, name: 'ER Mal Tejido' },
-  { id: 20, name: 'ER Marca de rodillo' },
-  { id: 21, name: 'ER Porosidad de h' },
-  { id: 22, name: 'Falta de tapa' },
-  { id: 23, name: 'Largas' },
-  { id: 24, name: 'Marca de guante' },
-  { id: 25, name: 'Material acumulad' },
-  { id: 26, name: 'Porosidad' },
-  { id: 27, name: 'Problema de mues' },
-  { id: 28, name: 'Punta dañada' },
-  { id: 29, name: 'Rebaba' },
-  { id: 30, name: 'Ruptura en la curv' },
-  { id: 31, name: 'Ruptura en punta' },
-  { id: 32, name: 'SCRAP Auditorias' },
-  { id: 33, name: 'Suciedad de Mand' },
-  { id: 34, name: 'Tapa corta' },
-  { id: 35, name: 'Tapa costilluda' }
-];
-
 export default function CapturePage() {
   const params = useParams();
   const theme = useTheme();
@@ -99,6 +61,7 @@ export default function CapturePage() {
   const [scrapLoading, setScrapLoading] = useState(false);
   const [scrapResult, setScrapResult] = useState(null);
   const [scrapError, setScrapError] = useState('');
+  const [DEFECT_OPTIONS, setDefectOptions] = useState([]);
 
   useEffect(() => {
     const fetchStation = async () => {
@@ -120,6 +83,19 @@ export default function CapturePage() {
     };
     fetchStation();
   }, [params.id]);
+
+  useEffect(() => {
+    const fetchDefects = async () => {
+      try {
+        const res = await fetch('/api/defects');
+        const data = await res.json();
+        setDefectOptions(data);
+      } catch (err) {
+        setDefectOptions([]);
+      }
+    };
+    fetchDefects();
+  }, []);
 
   const handleOpenModal = async () => {
     setOpenModal(true);
@@ -150,17 +126,25 @@ export default function CapturePage() {
     setSelectedDefects([]);
     setIsPrintSelected(false);
     
-    // Set the new mandrel
-    setSelectedMandrel(mandrel);
-    handleCloseModal();
-    
+    // Fetch client and extrusion SAP first
     try {
-      const response = await fetch(`/api/mandrels/client?sapNumber=P${mandrel.reference}`);
-      const data = await response.json();
-      setClientName(data.client);
+      // Fetch client details
+      const clientResponse = await fetch(`/api/mandrels/client?sapNumber=P${mandrel.reference}`);
+      const clientData = await clientResponse.json();
+      // Fetch SAP extrusion number
+      const extrusionResponse = await fetch(`/api/mandrels/extrusion?mandrel=${mandrel.mandrel}`);
+      const extrusionData = await extrusionResponse.json();
+
+      if (!clientData.client || clientData.client === 'No disponible' || !extrusionData.no_sap || extrusionData.no_sap === 'No disponible') {
+        toast.error('No se puede capturar: faltan datos de cliente o SAP Extrusion.');
+        return;
+      }
+      setClientName(clientData.client);
+      setSelectedMandrel({ ...mandrel, extrusionSap: extrusionData.no_sap });
+      handleCloseModal();
     } catch (error) {
-      console.error('Error fetching client details:', error);
-      toast.error('Error al obtener detalles del cliente');
+      console.error('Error fetching details:', error);
+      toast.error('Error al obtener detalles');
       setClientName('No disponible');
     }
   };
@@ -259,13 +243,14 @@ export default function CapturePage() {
       const fecha_hora = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       const defects = selectedDefects.map(d => {
         const defectObj = DEFECT_OPTIONS.find(opt => opt.name === d.name);
-        return defectObj ? { defect_id: defectObj.id, defect_count: d.count } : null;
+        return defectObj ? { defect_id: defectObj.defect_code, defect_count: d.count } : null;
       }).filter(Boolean);
       const payload = {
         station_name: stationName,
         mandrel: selectedMandrel?.mandrel || '',
         client: clientName,
         sap_number: selectedMandrel?.reference || '',
+        sap_number_extrusion: selectedMandrel?.extrusionSap || '',
         inspector,
         fecha_hora,
         piezas_buenas: Number(goodPieces) || 0,
@@ -397,7 +382,7 @@ export default function CapturePage() {
           <div class="main-sap">${mandrel}</div>
           <div class="client">Cliente: <b>${client}</b></div>
           <div class="section">Estampado: <br/>Área de Muesca:<br/>Prueba de Fuga:</div>
-          <div class="section">SAP: ${sap}<br/>SAP: ${sap}</div>
+          <div class="section">SAP Extrusion: ${selectedMandrel?.extrusionSap || 'No disponible'}<br/>SAP Vulcanizado: ${sap}</div>
           <div class="barcode">
             <svg id="barcode"></svg>
           </div>
@@ -790,9 +775,9 @@ export default function CapturePage() {
                   {clientName}
                 </Typography>
                 <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }} color="text.secondary">
-                  SAP Number
+                  Numero SAP
                 </Typography>
-                <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 2 }}>
+                <Typography variant="h4" component="div" fontWeight="600" color="primary" sx={{ mb: 1 }}>
                   {selectedMandrel?.reference || 'No disponible'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -801,7 +786,7 @@ export default function CapturePage() {
                     color="success" 
                     size="large" 
                     onClick={handleGuardarClick}
-                    disabled={!(Number(goodPieces) > 0 || Number(badPieces) > 0)}
+                    disabled={!(Number(goodPieces) > 0 || Number(badPieces) > 0) || !selectedMandrel?.extrusionSap || !clientName}
                     sx={{ fontSize: '1.6rem' }}
                     startIcon={<SaveIcon sx={{ fontSize: 28 }} />}
                   >

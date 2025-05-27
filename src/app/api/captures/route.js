@@ -9,6 +9,7 @@ export async function POST(request) {
       mandrel,
       client,
       sap_number,
+      sap_number_extrusion,
       inspector,
       fecha_hora,
       piezas_buenas,
@@ -23,10 +24,10 @@ export async function POST(request) {
 
     // Insert into captures
     const captureResult = await query(
-      `INSERT INTO captures (station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas,shift)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [station_name, mandrel, client, sap_number, inspector, fecha_hora, piezas_buenas, piezas_malas, shift],
-      't-civ'
+      `INSERT INTO captures (station_name, mandrel, client, sap_number, sap_number_extrusion, inspector, fecha_hora, piezas_buenas, piezas_malas,shift)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [station_name, mandrel, client, sap_number, sap_number_extrusion, inspector, fecha_hora, piezas_buenas, piezas_malas, shift],
+      't-civ-test'
     );
     const capture_id = captureResult.insertId;
 
@@ -36,7 +37,7 @@ export async function POST(request) {
       await query(
         'INSERT INTO capture_defects (capture_id, defect_id, defect_count) VALUES ?',
         [defectInserts],
-        't-civ'
+        't-civ-test'
       );
     }
 

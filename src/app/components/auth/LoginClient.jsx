@@ -26,6 +26,9 @@ export default function LoginClient() {
   const [employeeId, setEmployeeId] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminUser, setAdminUser] = useState('');
   const router = useRouter();
   const { login, loginError } = useAuth();
   const theme = useTheme();
@@ -49,33 +52,57 @@ export default function LoginClient() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!employeeId.trim()) {
-      setError('Por favor ingrese su ID de empleado');
+    if (isAdmin) {
+      if (!adminUser.trim()) {
+        setError('Por favor ingrese el usuario admin');
+        return;
+      }
+      if (!adminPassword) {
+        setError('Por favor ingrese la contraseña de admin');
+        return;
+      }
+      setIsLoading(true);
+      setError('');
+      try {
+        // Directly redirect to dashboard for admin login
+        router.push('/dashboard');
+      } catch (error) {
+        setIsLoading(false);
+        console.log(error.message || 'Error de red');
+      }
       return;
+    } else {
+      if (!employeeId.trim()) {
+        setError('Por favor ingrese su ID de empleado');
+        return;
+      }
     }
-    
     setIsLoading(true);
     setError('');
-
-    // if employeeId starts with 120 remove the first 3 digits and last 1 digit, if it start with 12 and third digit is diifernt than 0 than remove the first 2 digits and last 1 digit
-    let employeeIdFormatted = employeeId;
-    if (employeeId.startsWith('120')) {
-      employeeIdFormatted = employeeId.slice(3, -1);
-    } else if (employeeId.startsWith('12') && employeeId[2] !== '0') {
-      employeeIdFormatted = employeeId.slice(2, -1);
-    }
-    
+    let result;
     try {
-      const result = await login(employeeIdFormatted.trim());
+      if (isAdmin) {
+        result = await login(adminUser.trim(), true, adminPassword);
+      } else {
+        let employeeIdFormatted = employeeId;
+        if (employeeId.startsWith('120')) {
+          employeeIdFormatted = employeeId.slice(3, -1);
+        } else if (employeeId.startsWith('12') && employeeId[2] !== '0') {
+          employeeIdFormatted = employeeId.slice(2, -1);
+        }
+        result = await login(employeeIdFormatted.trim(), false, '');
+      }
       if (result.success) {
         router.push('/dashboard/select-autoclave');
       } else {
         setEmployeeId('');
+        setAdminUser('');
+        setAdminPassword('');
         setError(result.error || 'Error al iniciar sesión');
       }
     } catch (err) {
       setError('Error al iniciar sesión');
-      console.error(err);
+      console.log(err);
     } finally {
       setIsLoading(false);
     }
@@ -142,71 +169,114 @@ export default function LoginClient() {
               T-CIV
             </Typography>
           </Box>
-          
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Button
+              variant={isAdmin ? 'contained' : 'outlined'}
+              color="secondary"
+              size="small"
+              onClick={() => setIsAdmin((prev) => !prev)}
+              sx={{ mr: 2 }}
+            >
+              {isAdmin ? 'Supervisor' : 'Inspector'}
+            </Button>
+            
+          </Box>
           <Divider sx={{ mb: 3 }} />
-          
           {(error || loginError) && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error || loginError}
             </Alert>
           )}
-          
           <form onSubmit={handleFormSubmit} autoComplete="off">
-            <TextField
-              fullWidth
-              label="ID de Empleado"
-              variant="outlined"
-              value={employeeId}
-              onChange={(e) => {
-                setEmployeeId(e.target.value);
-                setError('');
-              }}
-              error={!!error}
-              helperText={error}
-              autoFocus
-              disabled={isLoading}
-              sx={{ mb: 3 }}
-              inputRef={inputRef}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon color="action" />
-                  </InputAdornment>
-                ),
-                inputMode: 'none',
-                readOnly: true
-              }}
-            />
-            <Box sx={{
-              mt: 1,
-              mb: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              position: 'relative',
-              zIndex: 1000
-            }}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {[1,2,3].map(n => (
-                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                ))}
+            {isAdmin ? (
+              <>
+                <TextField
+                  fullWidth
+                  label="Usuario"
+                  variant="outlined"
+                  value={adminUser}
+                  onChange={(e) => {
+                    setAdminUser(e.target.value);
+                    setError('');
+                  }}
+                  error={!!error}
+                  helperText={error}
+                  autoFocus
+                  disabled={isLoading}
+                  sx={{ mb: 3 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Contraseña"
+                  type="password"
+                  variant="outlined"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  sx={{ mb: 3 }}
+                  disabled={isLoading}
+                />
+              </>
+            ) : (
+              <>
+                <TextField
+                  fullWidth
+                  label="ID de Empleado"
+                  variant="outlined"
+                  value={employeeId}
+                  onChange={(e) => {
+                    setEmployeeId(e.target.value);
+                    setError('');
+                  }}
+                  error={!!error}
+                  helperText={error}
+                  autoFocus
+                  disabled={isLoading}
+                  sx={{ mb: 3 }}
+                  inputRef={inputRef}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    inputMode: 'none',
+                    readOnly: true
+                  }}
+                />
+              </>
+            )}
+            {!isAdmin && (
+              <Box sx={{
+                mt: 1,
+                mb: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                position: 'relative',
+                zIndex: 1000
+              }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {[1,2,3].map(n => (
+                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                  ))}
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  {[4,5,6].map(n => (
+                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                  ))}
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  {[7,8,9].map(n => (
+                    <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
+                  ))}
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('back')}>&larr;</Button>
+                  <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('0')}>0</Button>
+                  <Button variant="contained" color="primary" sx={{ width: 56, height: 56, fontSize:15 }} onMouseDown={handleKeypadEnter}>Enter</Button>
+                </Box>
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {[4,5,6].map(n => (
-                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                ))}
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {[7,8,9].map(n => (
-                  <Button key={n} variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick(String(n))}>{n}</Button>
-                ))}
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('back')}>&larr;</Button>
-                <Button variant="outlined" sx={{ width: 56, height: 56, fontSize: 24 }} onMouseDown={() => handleKeypadClick('0')}>0</Button>
-                <Button variant="contained" color="primary" sx={{ width: 56, height: 56, fontSize:15 }} onMouseDown={handleKeypadEnter}>Enter</Button>
-              </Box>
-            </Box>
+            )}
             
             <Button
               type="submit"
