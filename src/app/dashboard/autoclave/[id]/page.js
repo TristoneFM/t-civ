@@ -434,7 +434,17 @@ export default function CapturePage() {
     setScrapError('');
     setScrapResult(null);
     try {
-      const res = await fetch(`/api/captures/scrap?station=${encodeURIComponent(stationName)}&start=${encodeURIComponent(scrapStart.toISOString())}&end=${encodeURIComponent(scrapEnd.toISOString())}`);
+      // Format dates to match the database format
+      const formatDate = (date) => {
+        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}:00`;
+      };
+
+      const formattedStart = formatDate(scrapStart);
+      const formattedEnd = formatDate(scrapEnd);
+
+      console.log('Sending dates:', { formattedStart, formattedEnd });
+
+      const res = await fetch(`/api/captures/scrap?station=${encodeURIComponent(stationName)}&start=${encodeURIComponent(formattedStart)}&end=${encodeURIComponent(formattedEnd)}`);
       const data = await res.json();
       console.log('Scrap API result:', data);
       if (res.ok) {
