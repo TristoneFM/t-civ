@@ -11,26 +11,19 @@ export async function GET(request) {
     }
     const rows = await query(
       `SELECT 
-        cd.id AS capture_defect_id,
-        cd.defect_id,
+        d.id AS defect_id,
         d.defect_code,
         d.description AS defect_name,
-        cd.defect_count AS total_malas,
-        c.id AS capture_id,
-        c.station_name,
         c.mandrel,
-        c.client,
-        c.sap_number,
-        c.inspector,
-        c.fecha_hora,
-        c.piezas_buenas,
+        c.sap_number_extrusion,
         c.shift,
-        c.sap_number_extrusion
+        SUM(cd.defect_count) AS total_malas
       FROM capture_defects cd
       JOIN captures c ON cd.capture_id = c.id
       JOIN defects d ON cd.defect_id = d.id
       WHERE c.fecha_hora BETWEEN ? AND ?
-      ORDER BY cd.id`,
+      GROUP BY d.id, c.mandrel, c.sap_number_extrusion, c.shift
+      ORDER BY total_malas DESC`,
       [start, end],
       't-civ-test'
     );
