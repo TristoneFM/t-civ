@@ -28,7 +28,7 @@ export async function GET(request) {
         c.sap_number_extrusion
       FROM capture_defects cd
       JOIN captures c ON cd.capture_id = c.id
-      JOIN defects d ON cd.defect_id = d.defect_code
+      JOIN defects d ON cd.defect_id = d.id
       WHERE c.fecha_hora BETWEEN ? AND ?
       ORDER BY cd.id`,
       [start, end],

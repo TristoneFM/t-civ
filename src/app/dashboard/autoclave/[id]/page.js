@@ -244,7 +244,7 @@ export default function CapturePage() {
       const fecha_hora = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       const defects = selectedDefects.map(d => {
         const defectObj = DEFECT_OPTIONS.find(opt => opt.id === d.id);
-        return defectObj ? { defect_id: defectObj.defect_code, defect_count: d.count } : null;
+        return defectObj ? { defect_id: defectObj.id, defect_count: d.count } : null;
       }).filter(Boolean);
       const payload = {
         station_name: stationName,

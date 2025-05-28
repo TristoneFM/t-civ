@@ -626,7 +626,7 @@ export default function ReportesPage() {
                       paginatedDefectSummary.map((row, idx) => (
                         <TableRow key={row.defect_id + '-' + row.mandrel + '-' + row.sap_number_extrusion + '-' + idx}>
                           <TableCell>{row.defect_name}</TableCell>
-                          <TableCell>{row.defect_id}</TableCell>
+                          <TableCell>{row.defect_code}</TableCell>
                           <TableCell>{row.mandrel}</TableCell>
                           <TableCell>{row.sap_number_extrusion}</TableCell>
                           <TableCell>{row.shift}</TableCell>
