@@ -186,7 +186,7 @@ export default function ReportesPage() {
           row.mandrel,
           row.sap_number_extrusion,
           row.shift,
-          row.fecha,
+          row.fecha?.split('T')[0],
           row.total_malas
         ].map(val => `"${val ?? ''}"`).join(','));
       });
@@ -636,7 +636,7 @@ export default function ReportesPage() {
                           <TableCell>{row.mandrel}</TableCell>
                           <TableCell>{row.sap_number_extrusion}</TableCell>
                           <TableCell>{row.shift}</TableCell>
-                          <TableCell>{row.fecha}</TableCell>
+                          <TableCell>{row.fecha?.split('T')[0]}</TableCell>
                           <TableCell align="right">{row.total_malas}</TableCell>
                         </TableRow>
                       ))
