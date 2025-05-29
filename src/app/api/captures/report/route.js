@@ -16,7 +16,7 @@ export async function GET(request) {
        WHERE c.fecha_hora BETWEEN ? AND ?
        ORDER BY c.fecha_hora DESC`,
       [start, end],
-      't-civ-test'
+      't-civ'
     );
     return NextResponse.json(rows);
   } catch (error) {

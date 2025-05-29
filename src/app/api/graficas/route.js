@@ -54,7 +54,7 @@ export async function GET(request) {
       AND shift = ?
       GROUP BY station_name`,
       [todayMysql, shift],
-      't-civ-test'
+      't-civ'
     );
 
     // Format the data

@@ -3,7 +3,7 @@ import { query } from '@/lib/mysql';
 
 export async function GET() {
   try {
-    const rows = await query('SELECT id, defect_code, description FROM defects', [], 't-civ-test');
+    const rows = await query('SELECT id, defect_code, description FROM defects', [], 't-civ');
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching defects:', error);
@@ -20,7 +20,7 @@ export async function POST(request) {
     const result = await query(
       'INSERT INTO defects (defect_code, description) VALUES (?, ?)',
       [defect_code, description],
-      't-civ-test'
+      't-civ'
     );
     return NextResponse.json({ success: true, id: result.insertId });
   } catch (error) {

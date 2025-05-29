@@ -11,7 +11,7 @@ export async function PUT(request, { params }) {
     await query(
       'UPDATE defects SET defect_code = ?, description = ? WHERE id = ?',
       [defect_code, description, id],
-      't-civ-test'
+      't-civ'
     );
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -23,7 +23,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
-    await query('DELETE FROM defects WHERE id = ?', [id], 't-civ-test');
+    await query('DELETE FROM defects WHERE id = ?', [id], 't-civ');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting defect:', error);

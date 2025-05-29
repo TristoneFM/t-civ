@@ -22,7 +22,7 @@ export async function GET(request) {
       GROUP BY mandrel
       HAVING SUM(piezas_malas) > 0
     `;
-    const results = await query(sql, [station, start, end], 't-civ-test');
+    const results = await query(sql, [station, start, end], 't-civ');
     const totalMalas = results.reduce((sum, row) => sum + Number(row.malas || 0), 0);
 
     return NextResponse.json({ totalMalas, porMandril: results });

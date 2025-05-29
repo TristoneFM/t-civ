@@ -27,7 +27,7 @@ export async function GET(request) {
       GROUP BY d.id, c.mandrel, c.sap_number_extrusion, c.shift, c.station_name, DATE(c.fecha_hora)
       ORDER BY fecha DESC, total_malas DESC`,
       [start, end],
-      't-civ-test'
+      't-civ'
     );
     return NextResponse.json(rows);
   } catch (error) {
