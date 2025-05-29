@@ -18,7 +18,6 @@ export async function GET(request) {
       [start, end],
       't-civ-test'
     );
-    console.log(rows);
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching report:', error);

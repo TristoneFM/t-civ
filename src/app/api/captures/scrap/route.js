@@ -12,7 +12,6 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    console.log('Received parameters:', { station, start, end });
 
     const sql = `
       SELECT mandrel, SUM(piezas_malas) as malas

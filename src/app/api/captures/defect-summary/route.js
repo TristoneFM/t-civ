@@ -17,17 +17,18 @@ export async function GET(request) {
         c.mandrel,
         c.sap_number_extrusion,
         c.shift,
+        c.station_name,
+        DATE(c.fecha_hora) as fecha,
         SUM(cd.defect_count) AS total_malas
       FROM capture_defects cd
       JOIN captures c ON cd.capture_id = c.id
       JOIN defects d ON cd.defect_id = d.id
       WHERE c.fecha_hora BETWEEN ? AND ?
-      GROUP BY d.id, c.mandrel, c.sap_number_extrusion, c.shift
-      ORDER BY total_malas DESC`,
+      GROUP BY d.id, c.mandrel, c.sap_number_extrusion, c.shift, c.station_name, DATE(c.fecha_hora)
+      ORDER BY fecha DESC, total_malas DESC`,
       [start, end],
       't-civ-test'
     );
-    console.log(rows);
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching defect summary:', error);

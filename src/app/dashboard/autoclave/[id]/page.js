@@ -33,6 +33,7 @@ import JsBarcode from 'jsbarcode';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 export default function CapturePage() {
   const params = useParams();
@@ -89,7 +90,7 @@ export default function CapturePage() {
       try {
         const res = await fetch('/api/defects');
         const data = await res.json();
-        console.log(data);
+  
         setDefectOptions(data);
       } catch (err) {
         setDefectOptions([]);
@@ -442,11 +443,11 @@ export default function CapturePage() {
       const formattedStart = formatDate(scrapStart);
       const formattedEnd = formatDate(scrapEnd);
 
-      console.log('Sending dates:', { formattedStart, formattedEnd });
+
 
       const res = await fetch(`/api/captures/scrap?station=${encodeURIComponent(stationName)}&start=${encodeURIComponent(formattedStart)}&end=${encodeURIComponent(formattedEnd)}`);
       const data = await res.json();
-      console.log('Scrap API result:', data);
+ 
       if (res.ok) {
         setScrapResult(data);
       } else {
@@ -631,8 +632,9 @@ export default function CapturePage() {
             color="error"
             onClick={handleOpenScrap}
             sx={{ fontWeight: 600, fontSize: '1.2rem', mt: 1 }}
+            startIcon={<AssessmentIcon />}
           >
-            Scrap
+            Reporte Scrap
           </Button>
         </Box>
 
@@ -1163,26 +1165,58 @@ export default function CapturePage() {
         </Dialog>
 
         {/* Scrap Modal */}
-        <Dialog open={scrapOpen} onClose={handleCloseScrap} maxWidth="xs" fullWidth>
-          <DialogTitle>Reporte de Scrap</DialogTitle>
-          <DialogContent>
+        <Dialog open={scrapOpen} onClose={handleCloseScrap} maxWidth="md" fullWidth>
+          <DialogTitle sx={{ textAlign: 'center' }}>Reporte de Scrap</DialogTitle>
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
-                label="Hora inicio"
-                value={scrapStart}
-                onChange={setScrapStart}
-                renderInput={(params) => <TextField {...params} margin="normal" fullWidth style={{mb:'10px'}} />}
-              />
-              <DateTimePicker
-                label="Hora fin"
-                value={scrapEnd}
-                onChange={setScrapEnd}
-                renderInput={(params) => <TextField {...params} margin="normal" fullWidth style={{mb:'10px'}} />}
-              />
+              <Grid container spacing={2} sx={{ maxWidth: 800, width: '100%', justifyContent: 'center' }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, textAlign: 'center' }}>Hora Inicial</Typography>
+                  <DateTimePicker
+                    label="Hora inicio"
+                    value={scrapStart}
+                    onChange={setScrapStart}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        margin="normal" 
+                        fullWidth 
+                        sx={{ 
+                          '& .MuiInputBase-root': { 
+                            justifyContent: 'center',
+                            '& input': { textAlign: 'center' }
+                          }
+                        }} 
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, textAlign: 'center' }}>Hora Final</Typography>
+                  <DateTimePicker
+                    label="Hora fin"
+                    value={scrapEnd}
+                    onChange={setScrapEnd}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        margin="normal" 
+                        fullWidth 
+                        sx={{ 
+                          '& .MuiInputBase-root': { 
+                            justifyContent: 'center',
+                            '& input': { textAlign: 'center' }
+                          }
+                        }} 
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
             </LocalizationProvider>
-            {scrapError && <Typography color="error" sx={{ mt: 1 }}>{scrapError}</Typography>}
+            {scrapError && <Typography color="error" sx={{ mt: 1, textAlign: 'center' }}>{scrapError}</Typography>}
             {scrapResult && (
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2, width: '100%', maxWidth: 800, textAlign: 'center' }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Por Mandril:</Typography>
                 <Box sx={{ mb: 2 }}>
                   {scrapResult.porMandril && scrapResult.porMandril.length > 0 ? (
@@ -1200,7 +1234,7 @@ export default function CapturePage() {
               </Box>
             )}
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
             <Button onClick={handleCloseScrap}>Cerrar</Button>
             <Button onClick={handleScrapSearch} disabled={scrapLoading} variant="contained" color="error">
               {scrapLoading ? 'Buscando...' : 'Buscar'}

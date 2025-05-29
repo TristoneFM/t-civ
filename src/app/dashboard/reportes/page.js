@@ -175,15 +175,18 @@ export default function ReportesPage() {
       });
     } else {
       headers = [
-        'Defecto', 'Código', 'Mandril', 'SAP Extrusión', 'Total Malas'
+        'Autoclave', 'Defecto', 'Código', 'Mandril', 'SAP Extrusión', 'Turno', 'Fecha', 'Total Malas'
       ];
       csvRows = [headers.join(',')];
       filteredDefectSummary.forEach(row => {
         csvRows.push([
+          row.station_name,
           row.defect_name,
-          row.defect_id,
+          row.defect_code,
           row.mandrel,
           row.sap_number_extrusion,
+          row.shift,
+          row.fecha,
           row.total_malas
         ].map(val => `"${val ?? ''}"`).join(','));
       });
@@ -605,31 +608,35 @@ export default function ReportesPage() {
                 <Table>
                   <TableHead>
                     <TableRow>
+                      <TableCell>Autoclave</TableCell>
                       <TableCell>Defecto</TableCell>
                       <TableCell>Código</TableCell>
                       <TableCell>Mandril</TableCell>
                       <TableCell>SAP Extrusión</TableCell>
                       <TableCell>Turno</TableCell>
+                      <TableCell>Fecha</TableCell>
                       <TableCell align="right">Total Malas</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {loadingSummary ? (
                       <TableRow>
-                        <TableCell colSpan={5} align="center">Cargando...</TableCell>
+                        <TableCell colSpan={8} align="center">Cargando...</TableCell>
                       </TableRow>
                     ) : filteredDefectSummary.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} align="center">Sin datos</TableCell>
+                        <TableCell colSpan={8} align="center">Sin datos</TableCell>
                       </TableRow>
                     ) : (
                       paginatedDefectSummary.map((row, idx) => (
                         <TableRow key={row.defect_id + '-' + row.mandrel + '-' + row.sap_number_extrusion + '-' + idx}>
+                          <TableCell>{row.station_name}</TableCell>
                           <TableCell>{row.defect_name}</TableCell>
                           <TableCell>{row.defect_code}</TableCell>
                           <TableCell>{row.mandrel}</TableCell>
                           <TableCell>{row.sap_number_extrusion}</TableCell>
                           <TableCell>{row.shift}</TableCell>
+                          <TableCell>{row.fecha}</TableCell>
                           <TableCell align="right">{row.total_malas}</TableCell>
                         </TableRow>
                       ))

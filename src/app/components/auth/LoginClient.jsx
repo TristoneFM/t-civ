@@ -85,7 +85,7 @@ export default function LoginClient() {
         }
         result = await login(employeeIdFormatted.trim(), false);
       }
-      console.log(result);
+
       if (result.success) {
        
         if (result.permissions && result.permissions.includes('admin')) {
